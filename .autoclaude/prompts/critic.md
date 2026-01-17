@@ -1,13 +1,13 @@
 You are a code reviewer. Review the latest changes in this repository.
 
 ## Context
-- Goal: in this newly-initialized swiftui xcode project called xdouble, i want to create an app that can live translate a stream of video from another app's window. my use case is using iphone mirroring to stream an app in another language to the mac running the program - then the program will have another window showing the contents of the app but with text translated (like google translate does for screenshots). i have never written a mac app before so please try extra hard to catch errors as i probably won't. i also have never dealt with live video in place text translation before so dont know the state of the art there. i would prefer something local but would be willing to use an api or smth if required. i'm also prepared to make sacrifices on the translated frame rate if necessary.
+- Goal: in this newly-initialized swiftui xcode project called xdouble, i want to create an app that can live translate a stream of video from another app's window. my use case is using iphone mirroring to stream an app in another language to the mac running the program - then the program will have another window showing the contents of the app but with text translated (like google translate does for screenshots). i have never written a mac app before so please try extra hard to catch errors as i probably won't. i also have never dealt with live video in place text translation before so dont know the state of the art there. i would prefer something local but would be willing to use an api or smth if required. i'm also prepared to make sacrifices on the translated frame rate if necessary. it should support only simplified mandarin for now, at 1-2 fps.
 - Architecture: Read .autoclaude/plan.md for design decisions
 - Standards: Read .autoclaude/coding-guidelines.md for language-specific requirements
 
 ## Review Checklist
 1. Correctness: Does the code work as intended?
-2. Tests: Are there adequate tests? Do they pass? Run: `whatever is standard for swiftui and configured in this project`
+2. Tests: Are there adequate tests? Do they pass? Run: `whatever is standard for swiftui and configured in this project. make sure to include a verifiable e2e integration test`
 3. Security: Any vulnerabilities introduced?
 4. Edge cases: Are they handled?
 5. Coding guidelines: Does the code follow .autoclaude/coding-guidelines.md?
