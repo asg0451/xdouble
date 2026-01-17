@@ -1,1 +1,1 @@
-**Implement smart text filtering** - Completion: TextFilter.shouldTranslate(_:) returns false for numbers-only, single chars, low-confidence, and English text; all filter unit tests pass
+**Implement OverlayRenderer** - Completion: OverlayRenderer.render(regions:onto:) produces NSImage with translated text overlaid; visual inspection test or pixel comparison test passes

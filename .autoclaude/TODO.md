@@ -41,7 +41,7 @@
   - Priority: medium
   - Dependencies: Create data models
 
-- [ ] **Implement OverlayRenderer** - Completion: OverlayRenderer.render(regions:onto:) produces NSImage with translated text overlaid; visual inspection test or pixel comparison test passes
+- [x] **Implement OverlayRenderer** - Completion: OverlayRenderer.render(regions:onto:) produces NSImage with translated text overlaid; visual inspection test or pixel comparison test passes
   - Priority: high
   - Dependencies: Create data models
 
