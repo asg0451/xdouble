@@ -10,7 +10,7 @@
 - [x] **Fix: Correct content rect type cast in CaptureStreamOutput** - Completion: The attachment[.contentRect] cast uses the correct type (likely CGRect or NSDictionary) and successfully extracts content rect values
   - Priority: low
 
-- [ ] **Fix: Consider CaptureWindow Sendable conformance** - Completion: Either remove Sendable conformance from CaptureWindow, use @unchecked Sendable with documentation explaining safety, or copy only the necessary data from SCWindow
+- [x] **Fix: Consider CaptureWindow Sendable conformance** - Completion: Either remove Sendable conformance from CaptureWindow, use @unchecked Sendable with documentation explaining safety, or copy only the necessary data from SCWindow
   - Priority: low
 
 ### Phase 1: Project Setup & Foundation

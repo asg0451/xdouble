@@ -11,19 +11,27 @@ import AppKit
 import Combine
 
 /// Represents an available window that can be captured.
-struct CaptureWindow: Identifiable, Sendable {
+/// This struct contains only Sendable data; the actual SCWindow reference
+/// is stored separately in CaptureService and looked up by windowID when needed.
+struct CaptureWindow: Identifiable, Sendable, Hashable {
     let id: CGWindowID
     let title: String
     let applicationName: String
     let frame: CGRect
-    let scWindow: SCWindow
 
     init(scWindow: SCWindow) {
         self.id = scWindow.windowID
         self.title = scWindow.title ?? "Untitled"
         self.applicationName = scWindow.owningApplication?.applicationName ?? "Unknown"
         self.frame = scWindow.frame
-        self.scWindow = scWindow
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: CaptureWindow, rhs: CaptureWindow) -> Bool {
+        lhs.id == rhs.id
     }
 }
 
@@ -90,6 +98,11 @@ final class CaptureService: NSObject, ObservableObject {
     /// Note: Using nonisolated(unsafe) because AsyncStream.Continuation is thread-safe
     nonisolated(unsafe) private var frameContinuation: AsyncStream<CapturedFrame>.Continuation?
 
+    /// Storage for SCWindow references, keyed by windowID.
+    /// SCWindow is not Sendable, so we keep it separate from CaptureWindow
+    /// and only access it on the MainActor within this service.
+    private var scWindowsByID: [CGWindowID: SCWindow] = [:]
+
     /// Check if screen recording permission is granted.
     /// - Returns: true if permission is granted, false otherwise
     static func hasScreenRecordingPermission() -> Bool {
@@ -122,6 +135,12 @@ final class CaptureService: NSObject, ObservableObject {
             window.owningApplication?.bundleIdentifier != Bundle.main.bundleIdentifier
         }
 
+        // Update the SCWindow lookup dictionary
+        scWindowsByID.removeAll()
+        for scWindow in windows {
+            scWindowsByID[scWindow.windowID] = scWindow
+        }
+
         availableWindows = windows.map { CaptureWindow(scWindow: $0) }
 
         if availableWindows.isEmpty {
@@ -142,6 +161,11 @@ final class CaptureService: NSObject, ObservableObject {
     ///   - fps: Frames per second (1-2 recommended, defaults to 1)
     /// - Returns: An AsyncStream of captured frames
     func startCapture(window: CaptureWindow, fps: Double = 1.0) async throws -> AsyncStream<CapturedFrame> {
+        // Look up the SCWindow from our storage
+        guard let scWindow = scWindowsByID[window.id] else {
+            throw CaptureError.windowNotFound
+        }
+
         if isCapturing {
             await stopCapture()
             // Wait briefly for cleanup
@@ -160,7 +184,7 @@ final class CaptureService: NSObject, ObservableObject {
         config.pixelFormat = kCVPixelFormatType_32BGRA
 
         // Create content filter for the specific window
-        let filter = SCContentFilter(desktopIndependentWindow: window.scWindow)
+        let filter = SCContentFilter(desktopIndependentWindow: scWindow)
 
         // Create the stream
         let stream = SCStream(filter: filter, configuration: config, delegate: nil)
@@ -219,6 +243,11 @@ final class CaptureService: NSObject, ObservableObject {
     /// - Parameter window: The window to capture
     /// - Returns: A captured frame
     func captureFrame(from window: CaptureWindow) async throws -> CapturedFrame {
+        // Look up the SCWindow from our storage
+        guard let scWindow = scWindowsByID[window.id] else {
+            throw CaptureError.windowNotFound
+        }
+
         guard Self.hasScreenRecordingPermission() else {
             throw CaptureError.permissionDenied
         }
@@ -228,7 +257,7 @@ final class CaptureService: NSObject, ObservableObject {
         config.height = Int(window.frame.height) * 2
         config.pixelFormat = kCVPixelFormatType_32BGRA
 
-        let filter = SCContentFilter(desktopIndependentWindow: window.scWindow)
+        let filter = SCContentFilter(desktopIndependentWindow: scWindow)
 
         let image = try await SCScreenshotManager.captureImage(
             contentFilter: filter,
