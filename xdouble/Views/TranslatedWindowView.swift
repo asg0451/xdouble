@@ -103,6 +103,7 @@ struct TranslatedWindowView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
+        .accessibilityIdentifier("waitingView")
     }
 
     // MARK: - Stats Overlay
@@ -120,6 +121,19 @@ struct TranslatedWindowView: View {
 
     private var statsPanel: some View {
         VStack(alignment: .trailing, spacing: 4) {
+            // Processing indicator
+            if pipeline.isProcessing {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.5)
+                        .frame(width: 12, height: 12)
+                    Text("Processing...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityIdentifier("processingIndicator")
+            }
+
             if let frame = pipeline.currentFrame {
                 Text(frame.performanceDescription)
                     .font(.caption.monospacedDigit())
@@ -145,6 +159,7 @@ struct TranslatedWindowView: View {
         .padding(8)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .accessibilityIdentifier("statsPanel")
     }
 
     private var stateColor: Color {

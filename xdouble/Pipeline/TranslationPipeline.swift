@@ -68,6 +68,9 @@ final class TranslationPipeline: ObservableObject {
     /// Average processing time per frame
     @Published private(set) var averageProcessingTime: TimeInterval = 0
 
+    /// Whether a frame is currently being processed
+    @Published private(set) var isProcessing: Bool = false
+
     // MARK: - Services
 
     /// Service for capturing window frames
@@ -195,6 +198,7 @@ final class TranslationPipeline: ObservableObject {
         frameContinuation?.finish()
         frameContinuation = nil
 
+        isProcessing = false
         state = .idle
     }
 
@@ -255,6 +259,7 @@ final class TranslationPipeline: ObservableObject {
         pipelineTask = nil
         frameContinuation?.finish()
         frameContinuation = nil
+        isProcessing = false
         state = .idle
     }
 
@@ -265,6 +270,9 @@ final class TranslationPipeline: ObservableObject {
             if Task.isCancelled {
                 break
             }
+
+            // Mark as processing
+            isProcessing = true
 
             do {
                 let translatedFrame = try await processFrame(frame, session: session)
@@ -281,9 +289,13 @@ final class TranslationPipeline: ObservableObject {
                 // In a production app, we might want to emit error frames or use a different strategy
                 print("Pipeline error processing frame: \(error)")
             }
+
+            // Mark processing complete
+            isProcessing = false
         }
 
         // Loop ended - either stream finished or cancelled
+        isProcessing = false
         if case .running = state {
             state = .idle
         }

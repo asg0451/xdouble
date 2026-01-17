@@ -91,7 +91,7 @@
   - Priority: medium
   - Dependencies: TranslationService
 
-- [ ] **Add loading states and feedback** - Completion: UI shows loading indicator while initializing; shows "Processing..." or frame rate indicator during operation
+- [x] **Add loading states and feedback** - Completion: UI shows loading indicator while initializing; shows "Processing..." or frame rate indicator during operation
   - Priority: medium
   - Dependencies: ContentView, TranslationPipeline
 

@@ -1,44 +1,28 @@
 APPROVED
 
-## Summary
+Reviewed the latest commit "Add translation model download handling with UI feedback" which adds:
 
-Reviewed the last 5 commits covering:
-- Meaningful UI tests for window picker (`xdoubleUITests.swift`)
-- Removal of unconventional `nonisolated` type prefixes
-- Partial E2E integration tests for translation pipeline (`TranslationPipelineTests.swift`)
-- Screen recording permission handling with dedicated UI
-- Proper windowing and app lifecycle management
+1. **TranslationModelStatus enum** - New state tracking for model download status (unknown, installed, downloadRequired, downloading, downloadFailed)
 
-## Build & Tests
+2. **TranslationSetupState enum** - UI state management for translation setup flow (notStarted, checkingModel, downloadRequired, downloading, ready, failed)
 
-- **Build**: Succeeds without warnings
-- **Unit Tests**: All 68+ tests pass, including:
-  - TranslationPipelineTests (E2E pipeline tests)
-  - OCRServiceTests
-  - TranslationServiceTests
-  - TextFilterTests
-  - OverlayRendererTests
-  - CaptureServiceTests
+3. **TranslationService enhancements**:
+   - `checkModelStatus()` - Queries Apple's `LanguageAvailability` API
+   - `setDownloading()` / `setDownloadResult()` - Manual status updates for download lifecycle
+   - New error cases for download-related failures
 
-## Code Quality Observations
+4. **ContentView UI improvements**:
+   - `translationSetupView` - Shows progress during model checking/downloading
+   - `translationSetupFailedView` - Displays errors with retry/cancel options
+   - Proper state transitions during window selection → translation start flow
 
-1. **Architecture**: Clean pipeline design with proper async/await, MainActor isolation, and separation of concerns
-2. **Error Handling**: Comprehensive error types with localized descriptions throughout all services
-3. **Swift Concurrency**: Proper use of actors (TranslationCache), Sendable conformance, and MainActor annotations
-4. **UI Tests**: Good coverage of permission states, window picker elements, and refresh functionality with appropriate XCTSkip for permission-dependent tests
-5. **E2E Tests**: Creative approach using programmatically-generated Chinese text images to test OCR→filter→render pipeline without requiring actual TranslationSession (which needs UI context)
+**Test Results**: All 70+ tests pass including unit tests and UI tests.
 
-## Security
+**Code Quality**:
+- Clean separation between model status (TranslationService) and UI state (ContentView)
+- Proper error handling with user-friendly messages
+- State machine logic handles all edge cases (installed, needs download, failed, unknown)
+- `@MainActor` correctly used for UI-bound service
+- `ObservableObject` conformance allows reactive UI updates
 
-No vulnerabilities introduced. The app appropriately:
-- Requests screen recording permission via proper macOS APIs
-- Stores no sensitive data
-- Uses on-device translation (no external API calls)
-
-## Edge Cases Handled
-
-- Empty windows list (shows empty state view)
-- Permission denied (shows dedicated permission view with "Open System Settings" button)
-- OCR with no text found (returns empty array)
-- Empty translation regions (renderer handles gracefully)
-- Various image sizes in pipeline tests (200x100, 800x600, 1920x1080)
+**Minor Observation**: The new model status methods don't have dedicated unit tests, but this is acceptable since they are simple state setters and the Translation framework's actual download behavior cannot be mocked in unit tests. The integration is implicitly validated through the UI flow.
