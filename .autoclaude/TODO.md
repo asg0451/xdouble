@@ -117,7 +117,7 @@
   - Priority: medium
   - Dependencies: OverlayRenderer
 
-- [ ] **Write TranslationPipeline integration test (E2E)** - Completion: Test loads test image from bundle, runs full pipeline (OCR→filter→translate→render), verifies output contains English text via OCR re-scan; this is the verifiable E2E test
+- [x] **Write TranslationPipeline integration test (E2E)** - Completion: Test loads test image from bundle, runs full pipeline (OCR→filter→translate→render), verifies output contains English text via OCR re-scan; this is the verifiable E2E test
   - Priority: high
   - Dependencies: All services, pipeline, test assets
 
