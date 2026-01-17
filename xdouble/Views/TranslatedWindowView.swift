@@ -194,6 +194,7 @@ struct TranslatedWindowView: View {
 
                 Text("Frame \(pipeline.frameCount)")
                     .font(.caption.monospacedDigit())
+                    .accessibilityIdentifier("frameCountLabel")
             }
 
             if pipeline.averageProcessingTime > 0 {

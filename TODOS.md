@@ -1,1 +1,4 @@
 - [ ] the stop button does nothing
+- [ ] chinese ocr could be improved -- it often misses text that isnt black text on a white background. is there anything we can do to improve it?
+- [ ] add reverse OCR to RealTranslationE2ETests/testRealChineseImageTranslation to make sure translation works
+- [ ] add a moving test video to RealTranslationE2ETests/testRealChineseImageTranslation to make sure translation of non static content works
