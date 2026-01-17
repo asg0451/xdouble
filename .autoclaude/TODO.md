@@ -101,7 +101,7 @@
   - Priority: high
   - Dependencies: none
 
-- [ ] **Write OCRService unit tests** - Completion: Tests in xdoubleTests verify OCR detects Chinese text in test image with correct bounding boxes
+- [x] **Write OCRService unit tests** - Completion: Tests in xdoubleTests verify OCR detects Chinese text in test image with correct bounding boxes
   - Priority: high
   - Dependencies: OCRService, test assets
 

@@ -1,29 +1,43 @@
 APPROVED
 
-## Summary
+## Review Summary
 
-Reviewed commit `857a68b` - "Add loading states and feedback during frame processing"
+Reviewed the last 3 commits which add:
+1. **Translation model download handling with UI feedback** - TranslationService now tracks model status (installed/downloadRequired/downloading/downloadFailed), ContentView shows appropriate UI during setup phases
+2. **Loading states and feedback during frame processing** - TranslationPipeline.isProcessing property, TranslatedWindowView shows processing indicator
+3. **Test assets with Chinese text images for OCR testing** - 2 PNG test images with real Chinese text, TestImageLoader helper, comprehensive TestAssetTests
 
-### Changes Reviewed:
-- **TranslationPipeline.swift**: Added `isProcessing` published property to track when a frame is actively being processed through the OCR→translate→render pipeline
-- **TranslatedWindowView.swift**: Added processing indicator UI with spinning ProgressView in stats panel when `isProcessing` is true; added accessibility identifiers for `waitingView`, `statsPanel`, and `processingIndicator`
+## Test Results
+- **Unit tests**: 87/87 passed
+- **UI tests**: 11/11 passed (2 skipped appropriately based on permission state)
 
-### Verification:
-- **All 70+ tests pass** (unit tests, UI tests, and partial E2E integration tests)
-- No test failures or warnings
+## What Was Verified
 
-### Code Quality Assessment:
-1. **Correctness**: The `isProcessing` flag is properly managed across all code paths:
-   - Set to `true` before `processFrame()` call
-   - Set to `false` after processing completes (both success and error paths)
-   - Reset to `false` in all cleanup methods (`stop()`, `stopSync()`, end of pipeline loop)
+### Correctness
+- TranslationModelStatus enum properly tracks all model states
+- TranslationSetupState enum in ContentView handles complete setup flow
+- UI state transitions are correct (checkingModel → downloadRequired → downloading → ready/failed)
+- Test images contain valid Chinese text (你好世界, 欢迎使用, 翻译测试, 简体中文, 开始学习)
 
-2. **Thread Safety**: The `@MainActor` constraint on `TranslationPipeline` ensures thread-safe access to the published `isProcessing` property
+### Tests
+- TestAssetTests verify image loading from bundle works
+- OCR integration tests confirm text detection on bundled images
+- Pipeline integration tests verify full OCR→filter→render flow with bundled images
+- Error handling tests verify proper behavior for nonexistent images
 
-3. **Edge Cases**: Properly handled - cancellation, errors, and normal completion all correctly reset the processing state
+### Security
+- No vulnerabilities introduced
+- No user input injection risks
+- No hardcoded credentials
 
-4. **UI Updates**: The `@Published` property correctly triggers SwiftUI view updates when processing state changes
+### Edge Cases
+- Model already installed: proceeds directly to translation
+- Model needs download: shows UI feedback, handles download
+- Download fails: shows error with retry/cancel options
+- User cancels: returns to window selection cleanly
 
-5. **Testing**: Accessibility identifiers added to support UI testing
-
-The changes are minimal, focused, and correctly implement loading state feedback as specified in the TODO item.
+### Code Quality
+- Clean SwiftUI state management
+- Proper use of @Published for reactive updates
+- Accessibility identifiers added for UI testing
+- No regressions in existing functionality

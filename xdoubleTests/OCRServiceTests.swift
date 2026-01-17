@@ -241,6 +241,126 @@ struct OCRServiceTests {
         #expect(hasChineseSupport, "System should support Chinese text recognition")
     }
 
+    // MARK: - Real Screenshot Tests (using bundled test assets)
+
+    @Test func detectTextInRealChineseScreenshot() async throws {
+        // Load real Chinese app screenshot
+        let testImage = try TestImageLoader.loadCGImage(.chineseScreenshot)
+        let service = OCRService()
+
+        let regions = try await service.detectText(in: testImage)
+
+        // Real screenshot should have many text regions
+        #expect(!regions.isEmpty, "Should detect text in real Chinese screenshot")
+        #expect(regions.count >= 5, "Real screenshot should have multiple text regions, found: \(regions.count)")
+
+        // Verify text contains Chinese characters
+        let allText = regions.map { $0.text }.joined(separator: " ")
+        let containsChinese = allText.contains { char in
+            char.unicodeScalars.contains { scalar in
+                (0x4E00...0x9FFF).contains(scalar.value) ||
+                (0x3400...0x4DBF).contains(scalar.value)
+            }
+        }
+        #expect(containsChinese, "Detected text should contain Chinese characters. Found: \(allText)")
+    }
+
+    @Test func detectsExpectedTextInRealScreenshot() async throws {
+        // Load real Chinese app screenshot (food delivery app)
+        let testImage = try TestImageLoader.loadCGImage(.chineseScreenshot)
+        let service = OCRService()
+
+        let regions = try await service.detectText(in: testImage)
+        let allText = regions.map { $0.text }.joined(separator: " ")
+
+        // The screenshot contains "美食" (food/cuisine) as the main title
+        #expect(allText.contains("美食"), "Should detect '美食' in screenshot. Found: \(allText)")
+    }
+
+    @Test func boundingBoxesAreValidForRealScreenshot() async throws {
+        let testImage = try TestImageLoader.loadCGImage(.chineseScreenshot)
+        let service = OCRService()
+
+        let regions = try await service.detectText(in: testImage)
+
+        for region in regions {
+            // Bounding boxes must be in normalized coordinates (0.0-1.0)
+            #expect(region.boundingBox.origin.x >= 0, "X origin must be >= 0")
+            #expect(region.boundingBox.origin.y >= 0, "Y origin must be >= 0")
+            #expect(region.boundingBox.maxX <= 1.0, "X max must be <= 1.0, got \(region.boundingBox.maxX)")
+            #expect(region.boundingBox.maxY <= 1.0, "Y max must be <= 1.0, got \(region.boundingBox.maxY)")
+            #expect(region.boundingBox.width > 0, "Width must be > 0")
+            #expect(region.boundingBox.height > 0, "Height must be > 0")
+        }
+    }
+
+    @Test func absoluteBoundingBoxesMatchImageDimensions() async throws {
+        let testImage = try TestImageLoader.loadCGImage(.chineseScreenshot)
+        let service = OCRService()
+        let imageSize = CGSize(width: testImage.width, height: testImage.height)
+
+        let regions = try await service.detectText(in: testImage)
+
+        for region in regions {
+            let absoluteBox = region.absoluteBoundingBox(for: imageSize)
+
+            // Absolute coordinates must be within image bounds
+            #expect(absoluteBox.origin.x >= 0, "Absolute X must be >= 0")
+            #expect(absoluteBox.origin.y >= 0, "Absolute Y must be >= 0")
+            #expect(absoluteBox.maxX <= imageSize.width, "Absolute maxX must be <= image width")
+            #expect(absoluteBox.maxY <= imageSize.height, "Absolute maxY must be <= image height")
+            #expect(absoluteBox.width > 0, "Absolute width must be > 0")
+            #expect(absoluteBox.height > 0, "Absolute height must be > 0")
+        }
+    }
+
+    @Test func confidenceScoresAreReasonableForRealScreenshot() async throws {
+        let testImage = try TestImageLoader.loadCGImage(.chineseScreenshot)
+        let service = OCRService()
+
+        let regions = try await service.detectText(in: testImage)
+
+        // All confidence scores should be valid (0-1)
+        for region in regions {
+            #expect(region.confidence >= 0.0, "Confidence must be >= 0")
+            #expect(region.confidence <= 1.0, "Confidence must be <= 1")
+        }
+
+        // Most text in a real screenshot should have reasonable confidence
+        let highConfidenceRegions = regions.filter { $0.confidence >= 0.5 }
+        #expect(!highConfidenceRegions.isEmpty, "Should have some high-confidence detections")
+    }
+
+    @Test func detectTextInBundledHelloWorldImage() async throws {
+        let testImage = try TestImageLoader.loadCGImage(.chineseHelloWorld)
+        let service = OCRService()
+
+        let regions = try await service.detectText(in: testImage)
+
+        #expect(!regions.isEmpty, "Should detect text in chinese_hello_world.png")
+
+        // Verify Chinese characters detected
+        let allText = regions.map { $0.text }.joined()
+        let containsChinese = allText.contains { char in
+            char.unicodeScalars.contains { scalar in
+                (0x4E00...0x9FFF).contains(scalar.value)
+            }
+        }
+        #expect(containsChinese, "Should detect Chinese text. Found: \(allText)")
+    }
+
+    @Test func detectTextInBundledMultiRegionImage() async throws {
+        let testImage = try TestImageLoader.loadCGImage(.chineseMultiRegion)
+        let service = OCRService()
+
+        let regions = try await service.detectText(in: testImage)
+
+        #expect(!regions.isEmpty, "Should detect text in chinese_multi_region.png")
+
+        // Multi-region should have multiple text regions
+        #expect(regions.count >= 2, "Multi-region image should have multiple text regions, found: \(regions.count)")
+    }
+
     // MARK: - TextRegion Integration Tests
 
     @Test func textRegionAbsoluteBoundingBoxConversion() async throws {

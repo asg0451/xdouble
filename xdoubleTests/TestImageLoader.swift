@@ -19,6 +19,10 @@ enum TestImageLoader {
 
         /// Multi-region image with multiple Chinese phrases
         case chineseMultiRegion = "chinese_multi_region"
+
+        /// Real screenshot from a Chinese food delivery app
+        /// Contains: 美食, 请输入商家或商品名称, restaurant names, ratings, etc.
+        case chineseScreenshot = "chinese_screenshot"
     }
 
     /// Error types for image loading
