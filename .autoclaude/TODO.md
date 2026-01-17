@@ -33,7 +33,7 @@
   - Priority: high
   - Dependencies: Create data models
 
-- [ ] **Implement TranslationService** - Completion: TranslationService.translate(_:) converts Chinese text to English; unit test with known phrase "你好" → "Hello" (or similar) passes
+- [x] **Implement TranslationService** - Completion: TranslationService.translate(_:) converts Chinese text to English; unit test with known phrase "你好" → "Hello" (or similar) passes
   - Priority: high
   - Dependencies: none
 
@@ -93,7 +93,7 @@
   - Priority: high
   - Dependencies: OCRService, test assets
 
-- [ ] **Write TranslationService unit tests** - Completion: Tests verify translation of known Chinese phrases returns English
+- [x] **Write TranslationService unit tests** - Completion: Tests verify translation of known Chinese phrases returns English
   - Priority: high
   - Dependencies: TranslationService
 

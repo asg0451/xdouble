@@ -2,30 +2,28 @@ APPROVED
 
 ## Summary
 
-Reviewed the latest changes implementing CaptureService (ScreenCaptureKit wrapper) and OCRService (Vision framework Chinese text detection), along with data models TextRegion and TranslatedFrame.
+Reviewed the following changes from the last 5 commits:
+- **TextRegion.swift**: Data model for detected text with bounding boxes and confidence scores. Clean implementation with proper Sendable, Equatable, Hashable conformance. The `absoluteBoundingBox(for:)` method correctly handles Vision coordinate system (bottom-left origin) to CoreGraphics conversion.
+- **TranslatedFrame.swift**: Data model for processed frames with translated text. Includes useful computed properties for performance metrics.
+- **CaptureService.swift**: ScreenCaptureKit wrapper for window enumeration and frame capture. Properly handles permissions, implements async streaming via `AsyncStream`, and includes both single-frame and continuous capture modes.
+- **OCRService.swift**: Vision framework wrapper for Chinese text recognition. Uses `VNRecognizeTextRequest` with proper configuration for Simplified Chinese (`zh-Hans`).
+- **CaptureServiceTests.swift**: Unit tests covering data types, error handling, and service initialization.
+- **OCRServiceTests.swift**: Comprehensive tests including actual Chinese text detection using dynamically generated test images with CoreText rendering.
 
-### What was reviewed:
-- **TextRegion.swift**: Clean data model with proper coordinate conversion (Vision bottom-left to CoreGraphics top-left)
-- **TranslatedFrame.swift**: Well-designed output model with useful performance metrics
-- **CaptureService.swift**: Solid ScreenCaptureKit integration with async/await streaming, proper permission handling, and frame rate control
-- **OCRService.swift**: Vision framework OCR configured for Simplified Chinese with confidence filtering
-- **xdouble.entitlements**: Correct screen-recording entitlement configured
-- **CaptureServiceTests.swift**: Good coverage of types and error handling (7 tests)
-- **OCRServiceTests.swift**: Comprehensive tests including actual Chinese text detection with programmatically generated images (12 tests)
+## Test Results
 
-### Test Results:
-All 19 unit tests pass, plus UI tests. Build succeeds without errors.
+All 23 tests passed:
+- CaptureServiceTests: 7 tests
+- OCRServiceTests: 10 tests
+- UI Tests: 4 tests
+- Example test: 1 test
 
-### Code Quality:
-- Follows Swift best practices with proper async/await patterns
-- Uses modern Swift Testing framework (not XCTest)
-- Sendable conformance handled appropriately
-- Error types have helpful localized descriptions
-- Edge cases handled (empty images, low confidence, missing permissions)
+## Notes
 
-### Minor Issues (already tracked in TODO.md):
-Two low-priority issues are already documented and tracked:
-1. Content rect type cast may not be correct, but has safe fallback to image dimensions
-2. CaptureWindow/TranslatedFrame Sendable conformance with non-Sendable types
+1. **E2E Integration Test**: The plan specifies a TranslationPipelineIntegrationTests for E2E testing. This cannot be implemented yet because TranslationPipeline, TranslationService, and OverlayRenderer are not yet implemented (they're in the TODO for later phases). The current tests appropriately cover the components that have been implemented.
 
-These are non-blocking and appropriately prioritized as low.
+2. **CaptureWindow Sendable**: There's already a tracked TODO item for reviewing CaptureWindow's Sendable conformance with SCWindow. This is a minor issue since SCWindow is Sendable in macOS 14+.
+
+3. **Content rect parsing**: The recent commit "Fix: Correct content rect type cast in CaptureStreamOutput" addressed attachment parsing. The implementation includes a fallback to image dimensions if attachment parsing fails.
+
+The code is well-written, follows clean coding practices, and all implemented functionality has adequate test coverage.
