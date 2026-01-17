@@ -59,7 +59,8 @@
       "Bash(swift -parse:*)",
       "Bash(xcodebuild test:*)",
       "Bash(git diff:*)",
-      "Bash(swift:*)"
+      "Bash(swift:*)",
+      "Bash(git -C /Users/miles/proj/xdouble log --oneline -20)"
     ]
   },
   "hooks": {
