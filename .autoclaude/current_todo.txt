@@ -1,1 +1,1 @@
-**Implement TranslationPipeline actor** - Completion: TranslationPipeline.start(window:) orchestrates capture→OCR→filter→translate→render flow; publishes TranslatedFrame via Combine/AsyncSequence
+**Implement WindowPickerView** - Completion: SwiftUI view displays list of available windows with thumbnails; selecting a window triggers callback with SCWindow

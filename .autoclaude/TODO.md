@@ -53,7 +53,7 @@
 
 ### Phase 4: User Interface
 
-- [ ] **Implement WindowPickerView** - Completion: SwiftUI view displays list of available windows with thumbnails; selecting a window triggers callback with SCWindow
+- [x] **Implement WindowPickerView** - Completion: SwiftUI view displays list of available windows with thumbnails; selecting a window triggers callback with SCWindow
   - Priority: high
   - Dependencies: CaptureService (for window enumeration)
 
