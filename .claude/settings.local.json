@@ -1,0 +1,83 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build:*)",
+      "Bash(make build:*)",
+      "Bash(git status)",
+      "Bash(go vet:*)",
+      "Bash(ls:*)",
+      "Read(/tmp/claude/**)",
+      "Bash(make generate-go:*)",
+      "Bash(git restore:*)",
+      "Bash(git reset:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(git push:*)",
+      "Bash(head:*)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(docker build:*)",
+      "Bash(git init:*)",
+      "Bash(git subtree:*)",
+      "Bash(grep:*)",
+      "Bash(gofmt:*)",
+      "Bash(git add:*)",
+      "Bash(make test:*)",
+      "Bash(cargo search:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(cargo update:*)",
+      "Bash(find:*)",
+      "Bash(xargs ls:*)",
+      "Bash(golangci-lint:*)",
+      "Bash(pkill:*)",
+      "Bash(gh issue view:*)",
+      "Bash(git checkout:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(make generate-check:*)",
+      "Bash(act push:*)",
+      "Bash(cargo test:*)",
+      "Bash(git remote get-url:*)",
+      "Bash(go test:*)",
+      "Bash(git stash:*)",
+      "Bash(cargo check:*)",
+      "Bash(go work sync:*)",
+      "Bash(go version:*)",
+      "Bash(make generate:*)",
+      "Bash(make lint:*)",
+      "Bash(cargo tree:*)",
+      "Bash(cargo update)",
+      "Bash(go mod init:*)",
+      "Bash(cargo clean:*)",
+      "Bash(chmod:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh issue create:*)",
+      "Bash(cargo fmt:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git pull:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '\\a'"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '\\a'"
+          }
+        ]
+      }
+    ]
+  }
+}

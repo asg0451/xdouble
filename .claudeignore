@@ -1,0 +1,2 @@
+# Ignore autoclaude internal files - these are for orchestration only
+.autoclaude/
