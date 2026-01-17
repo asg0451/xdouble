@@ -36,7 +36,7 @@ Perfect for:
 ### Build from source
 
 ```bash
-git clone https://github.com/yourusername/xdouble.git
+git clone https://github.com/asg0451/xdouble.git
 cd xdouble
 xcodebuild -scheme xdouble build
 ```
