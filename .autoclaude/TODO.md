@@ -6,7 +6,7 @@
 
 ### Phase 1: Project Setup & Foundation
 
-- [ ] **Configure entitlements for screen recording** - Completion: xdouble.entitlements file exists with com.apple.security.screen-recording key set to true, and project.pbxproj references it
+- [x] **Configure entitlements for screen recording** - Completion: xdouble.entitlements file exists with com.apple.security.screen-recording key set to true, and project.pbxproj references it
   - Priority: high
   - Dependencies: none
 

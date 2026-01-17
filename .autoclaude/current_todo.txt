@@ -1,0 +1,1 @@
+**Configure entitlements for screen recording** - Completion: xdouble.entitlements file exists with com.apple.security.screen-recording key set to true, and project.pbxproj references it

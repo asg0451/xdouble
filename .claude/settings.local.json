@@ -53,10 +53,21 @@
       "Bash(git status)",
       "Bash(head:*)",
       "Bash(xargs ls:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(xcodebuild:*)"
     ]
   },
   "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/miles/proj/autoclaude/autoclaude _continue"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "AskUserQuestion",
