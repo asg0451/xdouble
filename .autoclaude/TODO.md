@@ -87,7 +87,7 @@
   - Priority: high
   - Dependencies: CaptureService
 
-- [ ] **Add translation model download handling** - Completion: App handles case where translation model isn't downloaded; shows appropriate UI feedback
+- [x] **Add translation model download handling** - Completion: App handles case where translation model isn't downloaded; shows appropriate UI feedback
   - Priority: medium
   - Dependencies: TranslationService
 

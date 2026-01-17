@@ -6,7 +6,17 @@
 //
 
 import Foundation
+import Combine
 import Translation
+
+/// Status of the translation model download.
+enum TranslationModelStatus: Sendable {
+    case unknown
+    case installed
+    case downloadRequired
+    case downloading
+    case downloadFailed(String)
+}
 
 /// Errors that can occur during translation operations.
 enum TranslationServiceError: Error, LocalizedError {
@@ -14,6 +24,8 @@ enum TranslationServiceError: Error, LocalizedError {
     case languagePairNotAvailable
     case translationFailed(Error)
     case sessionNotAvailable
+    case downloadRequired
+    case downloadFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -25,6 +37,10 @@ enum TranslationServiceError: Error, LocalizedError {
             return "Translation failed: \(error.localizedDescription)"
         case .sessionNotAvailable:
             return "Translation session could not be created."
+        case .downloadRequired:
+            return "The translation model needs to be downloaded. Please allow the download when prompted."
+        case .downloadFailed(let reason):
+            return "Translation model download failed: \(reason)"
         }
     }
 }
@@ -32,7 +48,7 @@ enum TranslationServiceError: Error, LocalizedError {
 /// Service for translating text from Simplified Chinese to English.
 /// Uses Apple's on-device Translation framework (macOS 15+).
 @MainActor
-final class TranslationService {
+final class TranslationService: ObservableObject {
     /// The source language (Simplified Chinese)
     let sourceLanguage: Locale.Language
 
@@ -45,18 +61,55 @@ final class TranslationService {
     /// Whether the language pair is available for translation
     private var isAvailable: Bool = false
 
+    /// Current status of the translation model
+    @Published private(set) var modelStatus: TranslationModelStatus = .unknown
+
     /// Creates a TranslationService for Chinese to English translation.
     init() {
         self.sourceLanguage = Locale.Language(identifier: "zh-Hans")
         self.targetLanguage = Locale.Language(identifier: "en")
     }
 
+    /// Checks the current model availability and updates modelStatus.
+    /// - Returns: The current model status
+    @discardableResult
+    func checkModelStatus() async -> TranslationModelStatus {
+        let availability = LanguageAvailability()
+        let status = await availability.status(from: sourceLanguage, to: targetLanguage)
+
+        switch status {
+        case .installed:
+            modelStatus = .installed
+        case .supported:
+            modelStatus = .downloadRequired
+        case .unsupported:
+            modelStatus = .downloadFailed("Language pair not supported on this device")
+        @unknown default:
+            modelStatus = .downloadFailed("Unknown availability status")
+        }
+
+        return modelStatus
+    }
+
+    /// Sets the model status to downloading (call when download begins).
+    func setDownloading() {
+        modelStatus = .downloading
+    }
+
+    /// Sets the model status after download attempt.
+    func setDownloadResult(success: Bool, error: String? = nil) {
+        if success {
+            modelStatus = .installed
+        } else {
+            modelStatus = .downloadFailed(error ?? "Download failed")
+        }
+    }
+
     /// Prepares the translation service by checking language availability.
     /// Call this before translating to ensure the language pair is ready.
     /// - Throws: TranslationServiceError if the language pair is not available
     func prepare() async throws {
-        let availability = LanguageAvailability()
-        let status = await availability.status(from: sourceLanguage, to: targetLanguage)
+        let status = await checkModelStatus()
 
         switch status {
         case .installed:
@@ -65,16 +118,23 @@ final class TranslationService {
                 source: sourceLanguage,
                 target: targetLanguage
             )
-        case .supported:
-            // Language is supported but may need download
+        case .downloadRequired:
+            // Language is supported but needs download - the .translationTask will handle prompting
             isAvailable = true
             configuration = TranslationSession.Configuration(
                 source: sourceLanguage,
                 target: targetLanguage
             )
-        case .unsupported:
-            throw TranslationServiceError.languageNotSupported
-        @unknown default:
+        case .downloading:
+            // Already in progress, allow configuration for when download completes
+            isAvailable = true
+            configuration = TranslationSession.Configuration(
+                source: sourceLanguage,
+                target: targetLanguage
+            )
+        case .downloadFailed(let reason):
+            throw TranslationServiceError.downloadFailed(reason)
+        case .unknown:
             throw TranslationServiceError.languageNotSupported
         }
     }

@@ -15,6 +15,16 @@ enum PermissionStatus {
     case denied
 }
 
+/// Represents the state of translation setup.
+enum TranslationSetupState {
+    case notStarted
+    case checkingModel
+    case downloadRequired
+    case downloading
+    case ready
+    case failed(String)
+}
+
 /// The main content view that switches between window selection and translation display.
 struct ContentView: View {
     /// The translation pipeline manages the capture → OCR → translate → render flow
@@ -38,6 +48,9 @@ struct ContentView: View {
     /// Screen recording permission status
     @State private var permissionStatus: PermissionStatus = .unknown
 
+    /// Translation model setup state
+    @State private var translationSetupState: TranslationSetupState = .notStarted
+
     var body: some View {
         Group {
             switch permissionStatus {
@@ -47,7 +60,15 @@ struct ContentView: View {
                 permissionDeniedView
             case .granted:
                 if selectedWindow != nil {
-                    translationView
+                    // Show translation setup UI when needed
+                    switch translationSetupState {
+                    case .checkingModel, .downloadRequired, .downloading:
+                        translationSetupView
+                    case .failed(let message):
+                        translationSetupFailedView(message: message)
+                    default:
+                        translationView
+                    }
                 } else {
                     windowPickerView
                 }
@@ -141,6 +162,109 @@ struct ContentView: View {
         .accessibilityIdentifier("permissionDeniedView")
     }
 
+    /// View shown during translation model setup (checking, downloading)
+    private var translationSetupView: some View {
+        VStack(spacing: 24) {
+            switch translationSetupState {
+            case .checkingModel:
+                ProgressView()
+                    .scaleEffect(1.5)
+                VStack(spacing: 8) {
+                    Text("Checking Translation Model...")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    Text("Verifying that the Chinese to English translation model is available.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 400)
+                }
+
+            case .downloadRequired:
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.blue)
+                VStack(spacing: 8) {
+                    Text("Translation Model Download Required")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("downloadRequiredTitle")
+                    Text("The Chinese to English translation model needs to be downloaded. A system prompt will appear to start the download.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 400)
+                }
+                Text("Please wait...")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+
+            case .downloading:
+                ProgressView()
+                    .scaleEffect(1.5)
+                VStack(spacing: 8) {
+                    Text("Downloading Translation Model...")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("downloadingTitle")
+                    Text("The translation model is being downloaded. This only needs to happen once.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 400)
+                }
+
+            default:
+                EmptyView()
+            }
+
+            Button("Cancel") {
+                cancelSetup()
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("translationSetupView")
+    }
+
+    /// View shown when translation setup fails
+    private func translationSetupFailedView(message: String) -> some View {
+        VStack(spacing: 24) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 64))
+                .foregroundStyle(.orange)
+
+            VStack(spacing: 8) {
+                Text("Translation Setup Failed")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .accessibilityIdentifier("setupFailedTitle")
+
+                Text(message)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 400)
+            }
+
+            HStack(spacing: 12) {
+                Button("Try Again") {
+                    retrySetup()
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button("Choose Different Window") {
+                    cancelSetup()
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("translationSetupFailedView")
+    }
+
     /// Window picker view for selecting a source window
     private var windowPickerView: some View {
         WindowPickerView(
@@ -206,41 +330,85 @@ struct ContentView: View {
 
         selectedWindow = window
         isStarting = true
+        translationSetupState = .checkingModel
 
         // Prepare translation service and create configuration
         Task {
             do {
+                // First check if model is available
+                let modelStatus = await pipeline.translationService.checkModelStatus()
+
+                switch modelStatus {
+                case .downloadRequired:
+                    translationSetupState = .downloadRequired
+                    // Set to downloading since the .translationTask will trigger the download UI
+                    pipeline.translationService.setDownloading()
+                    translationSetupState = .downloading
+                case .downloadFailed(let reason):
+                    translationSetupState = .failed(reason)
+                    isStarting = false
+                    return
+                case .installed, .downloading, .unknown:
+                    // Continue with setup
+                    break
+                }
+
                 try await pipeline.translationService.prepare()
                 let config = try pipeline.translationService.getConfiguration()
+
                 // Trigger the translation task by setting the configuration
+                // This may show a system download prompt if needed
                 translationConfig = config
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
-                    showErrorAlert = true
-                    selectedWindow = nil
+                    let errorDesc = error.localizedDescription
+                    translationSetupState = .failed(errorDesc)
                     isStarting = false
                 }
             }
         }
     }
 
+    /// Cancels the translation setup and returns to window selection.
+    private func cancelSetup() {
+        selectedWindow = nil
+        translationSetupState = .notStarted
+        translationConfig = nil
+        isStarting = false
+    }
+
+    /// Retries the translation setup with the current window.
+    private func retrySetup() {
+        guard let window = selectedWindow else {
+            cancelSetup()
+            return
+        }
+        translationSetupState = .notStarted
+        isStarting = false
+        selectWindow(window)
+    }
+
     /// Starts the translation pipeline with the provided session.
     private func startTranslation(with session: TranslationSession) async {
         guard let window = selectedWindow else {
             isStarting = false
+            translationSetupState = .notStarted
             return
         }
 
         do {
+            // Model download succeeded if we got here - update the service status
+            pipeline.translationService.setDownloadResult(success: true)
+
             // Start the pipeline - the returned stream is managed internally
             _ = try await pipeline.start(window: window, session: session, fps: 1.5)
+            translationSetupState = .ready
             isStarting = false
         } catch {
             await MainActor.run {
-                errorMessage = error.localizedDescription
-                showErrorAlert = true
-                selectedWindow = nil
+                let errorDesc = error.localizedDescription
+                translationSetupState = .failed(errorDesc)
+                pipeline.translationService.setDownloadResult(success: false, error: errorDesc)
                 isStarting = false
                 translationConfig = nil
             }
@@ -253,6 +421,7 @@ struct ContentView: View {
             await pipeline.stop()
             selectedWindow = nil
             translationConfig = nil
+            translationSetupState = .notStarted
             isStarting = false
         }
     }
