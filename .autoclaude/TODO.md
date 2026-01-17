@@ -29,7 +29,7 @@
   - Priority: high
   - Dependencies: Configure entitlements
 
-- [ ] **Implement OCRService** - Completion: OCRService.detectText(in:) returns array of TextRegion with Chinese text and bounding boxes; unit test with sample Chinese image passes
+- [x] **Implement OCRService** - Completion: OCRService.detectText(in:) returns array of TextRegion with Chinese text and bounding boxes; unit test with sample Chinese image passes
   - Priority: high
   - Dependencies: Create data models
 

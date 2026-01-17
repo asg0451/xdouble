@@ -1,1 +1,1 @@
-**Fix: Reuse CIContext in CaptureStreamOutput** - Completion: CIContext is stored as a property in CaptureStreamOutput and reused across stream callback invocations instead of being created per-frame
+**Fix: Correct content rect type cast in CaptureStreamOutput** - Completion: The attachment[.contentRect] cast uses the correct type (likely CGRect or NSDictionary) and successfully extracts content rect values

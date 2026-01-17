@@ -1,51 +1,51 @@
-MINOR_ISSUES
+APPROVED
 
 ## Summary
-Reviewed the CaptureService implementation and related models. The code is well-structured, follows ScreenCaptureKit best practices, and all 8 unit tests pass. The implementation correctly handles window enumeration, frame capture via AsyncStream, and permission checking.
 
-## Minor Issues Found
-
-### 1. CIContext created per-frame (Performance)
-**File:** `xdouble/Services/CaptureService.swift:260-262`
-
-In `CaptureStreamOutput.stream()`, a new `CIContext()` is created for every frame:
-```swift
-let ciImage = CIImage(cvImageBuffer: imageBuffer)
-let context = CIContext()
-guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
-```
-
-`CIContext` is expensive to create and should be reused across frames. At 1-2 FPS this is acceptable but wasteful. Should be moved to a property.
-
-### 2. Content rect parsing may fail silently
-**File:** `xdouble/Services/CaptureService.swift:267-275`
-
-The code casts `attachment[.contentRect]` to `[String: CGFloat]`:
-```swift
-if let rectDict = attachment[.contentRect] as? [String: CGFloat] {
-```
-
-ScreenCaptureKit may store the content rect differently (as `CGRect` or `[String: Any]` with `NSNumber` values). This cast may fail silently. The fallback to image dimensions prevents crashes but may lose accurate content rect data.
-
-### 3. Sendable conformance with SCWindow
-**File:** `xdouble/Services/CaptureService.swift:14-28`
-
-`CaptureWindow` is marked `Sendable` but contains `scWindow: SCWindow`, which is an `NSObject`. While SCWindow is likely thread-safe in practice, this isn't formally guaranteed by the type system.
-
-## What's Working Well
-
-- Clean separation of concerns with `CaptureWindow`, `CapturedFrame`, and `CaptureError` types
-- Proper use of `@MainActor` for the service
-- AsyncStream-based frame delivery with proper cleanup
-- Good error messages in `CaptureError.errorDescription`
-- Permission handling with both preflight and request methods
-- Window filtering excludes own app's windows
-- FPS clamping to reasonable range (0.1-30)
-- Tests verify initial state, error descriptions, and basic functionality
+Reviewed the latest commits implementing:
+1. Screen recording entitlements (`xdouble.entitlements`)
+2. Data models (`TextRegion.swift`, `TranslatedFrame.swift`)
+3. `CaptureService` for window capture using ScreenCaptureKit
+4. CIContext reuse fix in `CaptureStreamOutput`
 
 ## Test Results
-All tests pass:
-- CaptureServiceTests: 7 tests passed
-- xdoubleTests: 1 test passed
-- xdoubleUITests: 2 tests passed
-- xdoubleUITestsLaunchTests: 2 tests passed (parallel)
+
+All 12 tests pass:
+- 8 unit tests (CaptureServiceTests)
+- 4 UI tests (launch and example tests)
+
+```
+** TEST SUCCEEDED **
+Executed 4 tests, with 0 failures (UI)
+Executed 8 tests, with 0 failures (Unit)
+```
+
+## Code Quality
+
+**Correctness:**
+- ScreenCaptureKit integration is correct (`SCStream`, `SCContentFilter`, `SCStreamConfiguration`)
+- Proper async/await usage with `AsyncStream` for frame delivery
+- Coordinate conversion in `TextRegion.absoluteBoundingBox()` correctly flips Y-axis from Vision to CoreGraphics
+
+**Good practices observed:**
+- Frame rate clamped to safe range (0.1-30.0 fps)
+- Self-window exclusion from capture list
+- Minimum window size filtering (50x50)
+- Proper error types with `LocalizedError` conformance
+- Reusable `CIContext` for efficiency
+
+**Known issues (already tracked in TODO.md):**
+- Content rect type cast may need correction (low priority)
+- `CaptureWindow` Sendable conformance with `SCWindow` reference (low priority)
+
+## E2E Integration Test Note
+
+The E2E integration test is planned for Phase 6 per the project plan. It requires the complete pipeline (CaptureService + OCRService + TranslationService + OverlayRenderer). Current implementation is at Phase 2, so the E2E test is not yet applicable. The existing unit tests for CaptureService are appropriate for this phase.
+
+## Security
+
+No vulnerabilities introduced. Screen recording entitlement is properly declared.
+
+## Verdict
+
+Code is correct for its current development phase. All tests pass. Known minor issues are already tracked in TODO.md.
