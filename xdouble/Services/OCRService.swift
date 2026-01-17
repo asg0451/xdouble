@@ -29,7 +29,8 @@ enum OCRError: Error, LocalizedError {
 
 /// Service for detecting text in images using Vision framework.
 /// Optimized for Simplified Chinese text recognition.
-final class OCRService: Sendable {
+/// Marked nonisolated to allow use from any actor context.
+nonisolated final class OCRService: Sendable {
     /// Minimum confidence threshold for including detected text
     let minimumConfidence: Float
 
@@ -40,7 +41,7 @@ final class OCRService: Sendable {
     /// - Parameters:
     ///   - minimumConfidence: Minimum confidence threshold (0.0-1.0, defaults to 0.0)
     ///   - recognitionLanguages: Languages to recognize (defaults to Simplified Chinese)
-    init(minimumConfidence: Float = 0.0, recognitionLanguages: [String] = ["zh-Hans"]) {
+    nonisolated init(minimumConfidence: Float = 0.0, recognitionLanguages: [String] = ["zh-Hans"]) {
         self.minimumConfidence = minimumConfidence
         self.recognitionLanguages = recognitionLanguages
     }
@@ -110,11 +111,12 @@ final class OCRService: Sendable {
     /// Get the supported recognition languages available on this system.
     /// - Parameter recognitionLevel: The recognition level to check (defaults to .accurate)
     /// - Returns: Array of language identifiers
-    static func supportedLanguages(for recognitionLevel: VNRequestTextRecognitionLevel = .accurate) -> [String] {
-        // Use the new revision for macOS 15+
-        let revision = VNRecognizeTextRequestRevision3
+    nonisolated static func supportedLanguages(for recognitionLevel: VNRequestTextRecognitionLevel = .accurate) -> [String] {
+        // Create a request to query supported languages (macOS 13+ API)
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = recognitionLevel
         do {
-            return try VNRecognizeTextRequest.supportedRecognitionLanguages(for: recognitionLevel, revision: revision)
+            return try request.supportedRecognitionLanguages()
         } catch {
             // Fallback to default languages
             return ["zh-Hans", "en-US"]

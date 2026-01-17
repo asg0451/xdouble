@@ -1,1 +1,1 @@
-**Update ContentView with main layout** - Completion: ContentView shows WindowPickerView when no window selected, TranslatedWindowView when active; stop button works
+**Fix: Swift 6 concurrency warnings** - Completion: Resolve MainActor isolation warnings in OCRService and TextRegion so the code compiles without warnings in Swift 6 language mode

@@ -4,6 +4,9 @@
 
 ## Pending
 
+- [x] **Fix: Swift 6 concurrency warnings** - Completion: Resolve MainActor isolation warnings in OCRService and TextRegion so the code compiles without warnings in Swift 6 language mode
+  - Priority: low
+
 - [x] **Fix: Reuse CIContext in CaptureStreamOutput** - Completion: CIContext is stored as a property in CaptureStreamOutput and reused across stream callback invocations instead of being created per-frame
   - Priority: low
 

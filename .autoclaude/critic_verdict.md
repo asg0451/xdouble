@@ -1,49 +1,49 @@
-APPROVED
+MINOR_ISSUES
 
 ## Summary
-Reviewed the latest batch of commits implementing core translation pipeline components:
 
-1. **TranslationPipeline.swift** - Well-structured actor that orchestrates capture→OCR→filter→translate→render flow with proper thread safety, caching, and error handling.
+Reviewed the complete implementation of xdouble - a macOS app for live translating video streams from another app's window. The codebase includes:
 
-2. **OverlayRenderer.swift** - CoreGraphics-based text overlay compositor with background color sampling for contrast, proper coordinate conversion, and font sizing.
+- **Services**: CaptureService (ScreenCaptureKit), OCRService (Vision), TranslationService (Apple Translation), OverlayRenderer (CoreGraphics), TextFilter
+- **Pipeline**: TranslationPipeline actor orchestrating the capture → OCR → translate → render flow
+- **Views**: WindowPickerView, TranslatedWindowView, ContentView
+- **Models**: TextRegion, TranslatedFrame
+- **Tests**: 70+ unit tests all passing
 
-3. **TextFilter.swift** - Smart filtering to skip translation of numbers, single characters, low-confidence OCR results, and already-English text.
+## Verdict
 
-4. **TranslatedWindowView.swift** - SwiftUI view displaying translated frames with performance stats overlay and proper state handling.
+**Build**: PASSES (no errors)
+**Tests**: ALL PASS (70+ tests)
+**Security**: No vulnerabilities found
+**Architecture**: Follows plan.md correctly
 
-5. **WindowPickerView.swift** - Window selection UI with thumbnail previews, error handling, and permission guidance.
+## Minor Issues
 
-## Test Results
-All 67+ tests pass including:
-- TextFilterTests (22 tests) - Comprehensive coverage of filtering logic
-- OverlayRendererTests (15 tests) - Rendering with various inputs
-- OCRServiceTests - Chinese text detection
-- TranslationServiceTests - Translation service and caching
-- CaptureServiceTests - Window capture basics
-- TranslationServiceIntegrationTests - Integration with Translation framework
+### 1. Missing E2E Integration Test
 
-## Code Quality
-- Clean separation of concerns with dedicated services
-- Proper async/await usage with Swift actors for thread safety
-- Comprehensive error types with LocalizedError conformance
-- Good use of SwiftUI patterns (@ObservedObject, @Published)
-- Sensible defaults with customizable parameters
+The plan.md explicitly specifies a `TranslationPipelineIntegrationTests` E2E test that should:
+1. Load a test image with Chinese text from test bundle
+2. Run through OCR → translate → render pipeline
+3. Verify output image is different from input
+4. Verify translated text appears in output (via secondary OCR pass)
 
-## Edge Cases Handled
-- Empty input arrays
-- Missing translations (nil handling)
-- Low confidence OCR results filtered
-- Pure numbers skipped
-- Single characters skipped
-- Already-English text skipped
-- Long translations with font size adjustment
-- Background color sampling with bounds checking
-- Translation caching with LRU-style eviction
+This test was not implemented. While unit tests cover individual components well, the full pipeline integration test is missing.
 
-## Security
-- Screen recording permission properly checked before capture
-- No hardcoded credentials or sensitive data
-- System URL scheme used for opening System Settings
+### 2. Swift 6 Concurrency Warnings
 
-## Note
-The ContentView and xdoubleApp haven't been updated yet to integrate these components - this is the expected next step per the implementation plan, not a bug in the reviewed code.
+The build shows warnings about MainActor isolation that will become errors in Swift 6 language mode:
+- OCRService is marked `Sendable` but some callers would need `await` for MainActor isolation
+- TextRegion's `absoluteBoundingBox(for:)` appears MainActor-isolated to callers
+
+These don't prevent the code from working but should be addressed for Swift 6 compatibility.
+
+## What Works Well
+
+- Clean separation of concerns with dedicated services for each task
+- Proper async/await usage throughout
+- Good error handling with descriptive error types
+- TranslationCache actor for efficient caching
+- Smart text filtering (numbers, single chars, English text, low confidence)
+- Background color sampling for readable text overlay
+- Comprehensive unit test coverage
+- Proper entitlements for screen recording
