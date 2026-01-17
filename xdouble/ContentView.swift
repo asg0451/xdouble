@@ -92,6 +92,7 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("checkingPermissionView")
     }
 
     /// View shown when screen recording permission is denied
@@ -105,6 +106,7 @@ struct ContentView: View {
                 Text("Screen Recording Permission Required")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .accessibilityIdentifier("permissionRequiredTitle")
 
                 Text("xdouble needs screen recording permission to capture and translate window content.")
                     .font(.body)
@@ -119,6 +121,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .accessibilityIdentifier("openSystemSettingsButton")
 
                 Text("After enabling permission, return to this app.")
                     .font(.caption)
@@ -131,9 +134,11 @@ struct ContentView: View {
                 }
             }
             .buttonStyle(.link)
+            .accessibilityIdentifier("checkAgainButton")
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("permissionDeniedView")
     }
 
     /// Window picker view for selecting a source window

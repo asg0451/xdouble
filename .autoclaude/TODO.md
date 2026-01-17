@@ -10,7 +10,7 @@
 - [x] **Fix: Remove unconventional `nonisolated` type prefixes** - Completion: Remove `nonisolated` keyword from type declarations in TextRegion.swift, TextFilter.swift, OCRService.swift, and OverlayRenderer.swift. Types should just conform to `Sendable` without the `nonisolated` prefix, which is the conventional approach.
   - Priority: low
 
-- [ ] **Fix: Add meaningful UI tests** - Completion: xdoubleUITests.swift contains tests that verify window picker UI elements exist, refresh button works, and window cards are displayed when windows are available
+- [x] **Fix: Add meaningful UI tests** - Completion: xdoubleUITests.swift contains tests that verify window picker UI elements exist, refresh button works, and window cards are displayed when windows are available
   - Priority: low
 
 - [x] **Fix: Swift 6 concurrency warnings** - Completion: Resolve MainActor isolation warnings in OCRService and TextRegion so the code compiles without warnings in Swift 6 language mode

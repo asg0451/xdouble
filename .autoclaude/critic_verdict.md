@@ -1,46 +1,28 @@
 APPROVED
 
-## Summary of Review
+Brief summary of what was reviewed:
 
-Reviewed the latest commits implementing the xdouble live translation app:
-- `52b890f` - Add partial E2E integration tests for translation pipeline
-- `14229d7` - Add screen recording permission handling with dedicated UI
-- `fab7c64` - Add proper windowing and app lifecycle management to xdoubleApp
-- `00626c3` - Fix Swift 6 concurrency warnings for Sendable types
-- `f7cfb1a` - Implement ContentView with main layout for window selection and translation display
+**Commits Reviewed (last 5):**
+1. `d20f997` - Remove unconventional nonisolated type prefixes from OCRService
+2. `52b890f` - Add partial E2E integration tests for translation pipeline
+3. `14229d7` - Add screen recording permission handling with dedicated UI
+4. `fab7c64` - Add proper windowing and app lifecycle management
+5. `00626c3` - Fix Swift 6 concurrency warnings for Sendable types
 
-## Test Results
-All **68 tests passed** covering:
-- OCRService (9 tests) - Chinese text detection with Vision framework
-- TextFilter (21 tests) - Smart filtering for numbers, single chars, English text, confidence
-- OverlayRenderer (14 tests) - Text overlay rendering with background sampling
-- TranslationService (11 tests) - Translation cache, error handling, service initialization
-- CaptureService (7 tests) - Window enumeration, frame capture, permissions
-- TranslationPipeline (6 tests) - Partial E2E tests covering OCR → filter → render
+**Key Changes:**
+- ContentView now properly handles permission states (unknown/denied/granted) with dedicated UI for each
+- Uses correct macOS APIs: `CGPreflightScreenCaptureAccess()` and `CGRequestScreenCaptureAccess()`
+- App re-checks permission when becoming active (after user returns from System Settings)
+- xdoubleApp has proper AppDelegate with lifecycle handling
+- TranslationPipelineTests.swift provides E2E testing (OCR → filter → render) with 7 comprehensive tests
 
-## Code Quality Assessment
+**Test Results:**
+- All 82 tests pass
+- Good coverage: OCRService, TextFilter, OverlayRenderer, TranslationService, CaptureService
+- Partial E2E tests verify the pipeline flow without actual translation (TranslationSession API limitation)
 
-**Positives:**
-- Clean architecture following plan.md: separate services, pipeline, models, views
-- Proper Swift 6 concurrency with Sendable conformance and MainActor isolation
-- Comprehensive error enums with LocalizedError conformance
-- Screen recording permission handling with clear UI feedback
-- CIContext properly reused in CaptureStreamOutput (not created per-frame)
-- Translation caching to avoid redundant API calls
-- Good test coverage with programmatically-generated test images
-
-**Architecture:**
-- Services are correctly isolated: CaptureService, OCRService, TranslationService, OverlayRenderer
-- TranslationPipeline properly orchestrates the capture → OCR → filter → translate → render flow
-- AsyncStream/Combine properly used for frame delivery
-- State management with @Published and ObservableObject
-
-**E2E Integration Test Notes:**
-The partial E2E tests (`TranslationPipelineTests.swift`) test OCR → filter → render with mock translations since `TranslationSession` requires UI context. This is an acceptable limitation documented in the test file.
-
-## Minor Issues (Non-Blocking)
-
-These are already tracked in TODO.md and do not block approval:
-1. `nonisolated` keyword prefixes on type declarations (unconventional style)
-2. UI tests not yet implemented
-3. Translation model download handling not yet implemented
+**Verified:**
+- Correctness: Permission flow logic is sound
+- Security: No vulnerabilities; uses system permission APIs correctly
+- Edge cases: Empty regions, low confidence, permission denied all handled
+- Code follows coding guidelines

@@ -61,9 +61,11 @@ struct WindowPickerView: View {
                 Text("Select a Window")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .accessibilityIdentifier("windowPickerTitle")
                 Text("Choose a window to translate")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("windowPickerSubtitle")
             }
 
             Spacer()
@@ -76,6 +78,7 @@ struct WindowPickerView: View {
                 Label("Refresh", systemImage: "arrow.clockwise")
             }
             .disabled(isLoading)
+            .accessibilityIdentifier("refreshWindowsButton")
         }
     }
 
@@ -87,6 +90,7 @@ struct WindowPickerView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("loadingWindowsView")
     }
 
     private func errorView(message: String) -> some View {
@@ -108,6 +112,7 @@ struct WindowPickerView: View {
                     openScreenRecordingSettings()
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("openSettingsFromErrorButton")
             }
 
             Button("Try Again") {
@@ -115,8 +120,10 @@ struct WindowPickerView: View {
                     await loadWindows()
                 }
             }
+            .accessibilityIdentifier("tryAgainButton")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("errorView")
     }
 
     private var emptyStateView: some View {
@@ -127,6 +134,7 @@ struct WindowPickerView: View {
 
             Text("No Windows Available")
                 .font(.headline)
+                .accessibilityIdentifier("noWindowsTitle")
 
             Text("Open an application window to get started")
                 .font(.subheadline)
@@ -137,8 +145,10 @@ struct WindowPickerView: View {
                     await loadWindows()
                 }
             }
+            .accessibilityIdentifier("emptyStateRefreshButton")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityIdentifier("emptyStateView")
     }
 
     private var windowGridView: some View {
@@ -152,10 +162,12 @@ struct WindowPickerView: View {
                             onSelect(window)
                         }
                     )
+                    .accessibilityIdentifier("windowCard_\(window.id)")
                 }
             }
             .padding(.vertical, 8)
         }
+        .accessibilityIdentifier("windowGridView")
     }
 
     // MARK: - Actions
