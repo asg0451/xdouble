@@ -77,7 +77,7 @@
 
 ### Phase 5: Error Handling & Polish
 
-- [ ] **Add screen recording permission handling** - Completion: App detects missing permission and shows alert with "Open System Settings" button that opens correct pane
+- [x] **Add screen recording permission handling** - Completion: App detects missing permission and shows alert with "Open System Settings" button that opens correct pane
   - Priority: high
   - Dependencies: CaptureService
 
