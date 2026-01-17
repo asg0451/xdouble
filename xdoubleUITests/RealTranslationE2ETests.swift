@@ -14,8 +14,10 @@ final class RealTranslationE2ETests: XCTestCase {
     var app: XCUIApplication!
     var previewApp: XCUIApplication?
 
-    // Path to test image
-    let testImagePath = "/Users/miles/proj/xdouble/xdoubleTests/Resources/chinese_screenshot.png"
+    // Path to test image (loaded from UI test bundle)
+    var testImagePath: String {
+        Bundle(for: type(of: self)).path(forResource: "chinese_screenshot", ofType: "png")!
+    }
 
     override func setUpWithError() throws {
         continueAfterFailure = false
