@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import Vision
 
 final class RealTranslationE2ETests: XCTestCase {
 
@@ -93,6 +94,81 @@ final class RealTranslationE2ETests: XCTestCase {
         return result == .completed
     }
 
+    /// Performs OCR on a screenshot to detect English text
+    /// - Parameter screenshot: The XCUIScreenshot to analyze
+    /// - Returns: Array of detected English text strings
+    private func performEnglishOCR(on screenshot: XCUIScreenshot) -> [String] {
+        guard let cgImage = screenshot.image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return []
+        }
+
+        var detectedTexts: [String] = []
+        let semaphore = DispatchSemaphore(value: 0)
+
+        let request = VNRecognizeTextRequest { request, error in
+            defer { semaphore.signal() }
+
+            guard error == nil,
+                  let observations = request.results as? [VNRecognizedTextObservation] else {
+                return
+            }
+
+            for observation in observations {
+                if let topCandidate = observation.topCandidates(1).first {
+                    detectedTexts.append(topCandidate.string)
+                }
+            }
+        }
+
+        request.recognitionLevel = .accurate
+        request.recognitionLanguages = ["en-US"]
+        request.usesLanguageCorrection = true
+
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        try? handler.perform([request])
+        semaphore.wait()
+
+        return detectedTexts
+    }
+
+    /// Checks if the detected text contains likely English translations (not just numbers or UI labels)
+    private func containsEnglishTranslation(_ texts: [String]) -> Bool {
+        // Common English words that would appear in translations
+        let englishIndicators = [
+            "the", "and", "is", "are", "was", "were", "have", "has", "had",
+            "will", "would", "could", "should", "can", "may", "might",
+            "this", "that", "these", "those", "what", "which", "who",
+            "from", "with", "for", "not", "but", "you", "your"
+        ]
+
+        let joinedText = texts.joined(separator: " ").lowercased()
+
+        // Check for common English words
+        for indicator in englishIndicators {
+            if joinedText.contains(" \(indicator) ") ||
+               joinedText.hasPrefix("\(indicator) ") ||
+               joinedText.hasSuffix(" \(indicator)") {
+                return true
+            }
+        }
+
+        // Also check if we have multi-word English phrases (3+ words with spaces)
+        for text in texts {
+            let words = text.split(separator: " ").filter { $0.count > 1 }
+            if words.count >= 3 {
+                // Check if words are mostly ASCII (English)
+                let asciiWords = words.filter { word in
+                    String(word).unicodeScalars.allSatisfy { $0.isASCII && $0.value > 64 }
+                }
+                if asciiWords.count >= 2 {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
     // MARK: - E2E Tests
 
     @MainActor
@@ -163,21 +239,49 @@ final class RealTranslationE2ETests: XCTestCase {
 
         XCTAssertTrue(frameProcessed, "Frames should be processed (waitingView should disappear)")
 
-        // Test passed - translation actually processed frames from the Chinese content
+        // Step 8: Reverse OCR - verify the translated output contains English text
+        // Take a screenshot of the translated frame and perform English OCR
+        let translatedFrame = app.images["translatedFrameImage"]
+        if translatedFrame.waitForExistence(timeout: 5) {
+            let screenshot = translatedFrame.screenshot()
+            let detectedTexts = performEnglishOCR(on: screenshot)
 
-        // Step 8: Test stop button functionality
+            // Log detected texts for debugging
+            print("Reverse OCR detected texts: \(detectedTexts)")
+
+            // Verify we found English text in the translated output
+            let hasEnglishTranslation = containsEnglishTranslation(detectedTexts)
+            XCTAssertTrue(
+                hasEnglishTranslation,
+                "Translated frame should contain English text. Detected: \(detectedTexts)"
+            )
+        } else {
+            // Fallback: take screenshot of the entire window
+            let windowScreenshot = app.screenshot()
+            let detectedTexts = performEnglishOCR(on: windowScreenshot)
+            print("Reverse OCR (window fallback) detected texts: \(detectedTexts)")
+
+            let hasEnglishTranslation = containsEnglishTranslation(detectedTexts)
+            XCTAssertTrue(
+                hasEnglishTranslation,
+                "Translated window should contain English text. Detected: \(detectedTexts)"
+            )
+        }
+
+        // Step 9: Test stop button functionality
         XCTAssertTrue(stopButton.waitForExistence(timeout: 5), "Stop button should exist while running")
-        stopButton.click()
+        // Use firstMatch to handle nested button elements
+        stopButton.firstMatch.click()
 
-        // Step 9: Verify play button appears after stopping
+        // Step 10: Verify play button appears after stopping
         let playButton = app.buttons["playButton"]
         XCTAssertTrue(playButton.waitForExistence(timeout: 5), "Play button should appear after stopping")
 
-        // Step 10: Test resume - click play button
-        playButton.click()
+        // Step 11: Test resume - click play button
+        playButton.firstMatch.click()
 
-        // Step 11: Verify stop button reappears (translation resumed)
-        XCTAssertTrue(stopButton.waitForExistence(timeout: 10), "Stop button should reappear after resuming")
+        // Step 12: Verify stop button reappears (translation resumed)
+        XCTAssertTrue(stopButton.firstMatch.waitForExistence(timeout: 10), "Stop button should reappear after resuming")
     }
 
     // TODO: Add test with animated content (video/GIF in browser, scrolling content)

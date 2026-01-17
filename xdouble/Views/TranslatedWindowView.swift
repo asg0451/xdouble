@@ -118,6 +118,7 @@ struct TranslatedWindowView: View {
                     .contentShape(Rectangle())
                     .gesture(magnifyGesture)
                     .gesture(dragGesture)
+                    .accessibilityIdentifier("translatedFrameImage")
             }
             .clipped()
             .background(Color(nsColor: .windowBackgroundColor))
