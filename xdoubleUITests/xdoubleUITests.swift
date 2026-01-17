@@ -262,6 +262,78 @@ final class xdoubleUITests: XCTestCase {
         }
     }
 
+    // MARK: - Window Selection Tests
+
+    @MainActor
+    func testWindowCardIsClickable() throws {
+        // Wait for window picker
+        let windowPickerTitle = app.staticTexts["windowPickerTitle"]
+
+        guard windowPickerTitle.waitForExistence(timeout: 10.0) else {
+            throw XCTSkip("Screen recording permission not granted")
+        }
+
+        // Wait for windows to load
+        sleep(3)
+
+        // Find window cards
+        let windowCards = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'windowCard_'"))
+
+        guard windowCards.count > 0 else {
+            throw XCTSkip("No window cards available")
+        }
+
+        let firstCard = windowCards.element(boundBy: 0)
+
+        // Verify the window card is enabled and hittable
+        XCTAssertTrue(firstCard.isEnabled, "Window card should be enabled")
+        XCTAssertTrue(firstCard.isHittable, "Window card should be hittable")
+    }
+
+    @MainActor
+    func testSelectWindowNavigatesToTranslationView() throws {
+        // Wait for window picker
+        let windowPickerTitle = app.staticTexts["windowPickerTitle"]
+
+        guard windowPickerTitle.waitForExistence(timeout: 10.0) else {
+            throw XCTSkip("Screen recording permission not granted")
+        }
+
+        // Wait for windows to load
+        sleep(3)
+
+        // Find window cards
+        let windowCards = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'windowCard_'"))
+
+        guard windowCards.count > 0 else {
+            throw XCTSkip("No window cards available")
+        }
+
+        let firstCard = windowCards.element(boundBy: 0)
+
+        // Click the window card
+        firstCard.click()
+
+        // Wait for transition
+        sleep(3)
+
+        // After clicking, should transition away from window picker
+        // Could be in setup view, translation view, or error view
+        let translationSetupView = app.otherElements["translationSetupView"]
+        let waitingView = app.otherElements["waitingView"]
+        let translationSetupFailedView = app.otherElements["translationSetupFailedView"]
+
+        let leftWindowPicker = translationSetupView.exists ||
+                               waitingView.exists ||
+                               translationSetupFailedView.exists ||
+                               !windowPickerTitle.exists
+
+        XCTAssertTrue(
+            leftWindowPicker,
+            "Should navigate away from window picker after selecting a window"
+        )
+    }
+
     // MARK: - Performance Tests
 
     @MainActor

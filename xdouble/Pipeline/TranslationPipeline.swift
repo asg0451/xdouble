@@ -102,6 +102,15 @@ final class TranslationPipeline: ObservableObject {
     /// Accumulated processing times for averaging
     private var processingTimes: [TimeInterval] = []
 
+    /// Stored session for restart capability
+    private var storedSession: TranslationSession?
+
+    /// Stored window for restart capability
+    private var storedWindow: CaptureWindow?
+
+    /// Stored FPS for restart capability
+    private var storedFPS: Double = 1.5
+
     // MARK: - Initialization
 
     /// Creates a new TranslationPipeline with default services.
@@ -149,6 +158,11 @@ final class TranslationPipeline: ObservableObject {
             throw PipelineError.alreadyRunning
         }
 
+        // Store for restart capability
+        storedWindow = window
+        storedSession = session
+        storedFPS = fps
+
         state = .starting
         frameCount = 0
         processingTimes = []
@@ -167,14 +181,11 @@ final class TranslationPipeline: ObservableObject {
         }
 
         // Create output stream for translated frames
+        // Note: We don't use onTermination to stop the pipeline because the stream
+        // may not be consumed (discarded with _), which would immediately terminate it.
+        // The pipeline runs independently and must be stopped explicitly with stop().
         let outputStream = AsyncStream<TranslatedFrame> { continuation in
             self.frameContinuation = continuation
-
-            continuation.onTermination = { @Sendable _ in
-                Task { @MainActor in
-                    self.stopSync()
-                }
-            }
         }
 
         // Start the pipeline processing task
@@ -184,6 +195,26 @@ final class TranslationPipeline: ObservableObject {
         }
 
         return outputStream
+    }
+
+    /// Restarts the pipeline using the previously stored session and window.
+    /// - Returns: AsyncStream of TranslatedFrame, or nil if no stored session/window
+    func restart() async throws -> AsyncStream<TranslatedFrame>? {
+        guard let window = storedWindow, let session = storedSession else {
+            return nil
+        }
+
+        // Make sure we're stopped first
+        if case .running = state {
+            await stop()
+        }
+
+        return try await start(window: window, session: session, fps: storedFPS)
+    }
+
+    /// Whether the pipeline can be restarted (has stored session and window)
+    var canRestart: Bool {
+        storedSession != nil && storedWindow != nil
     }
 
     /// Stops the translation pipeline.

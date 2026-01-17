@@ -281,6 +281,9 @@ struct ContentView: View {
             pipeline: pipeline,
             onStop: {
                 stopTranslation()
+            },
+            onPlay: {
+                retrySetup()
             }
         )
     }
@@ -348,8 +351,11 @@ struct ContentView: View {
                     translationSetupState = .failed(reason)
                     isStarting = false
                     return
-                case .installed, .downloading, .unknown:
-                    // Continue with setup
+                case .installed:
+                    // Model is ready, transition to ready state immediately
+                    translationSetupState = .ready
+                case .downloading, .unknown:
+                    // Continue with setup, let .translationTask handle it
                     break
                 }
 
@@ -379,13 +385,28 @@ struct ContentView: View {
 
     /// Retries the translation setup with the current window.
     private func retrySetup() {
-        guard let window = selectedWindow else {
+        guard selectedWindow != nil else {
             cancelSetup()
             return
         }
+
+        // If the pipeline can restart (has stored session), use that directly
+        if pipeline.canRestart {
+            Task {
+                do {
+                    _ = try await pipeline.restart()
+                } catch {
+                    translationSetupState = .failed(error.localizedDescription)
+                }
+            }
+            return
+        }
+
+        // No stored session - go through full setup
+        translationConfig = nil
         translationSetupState = .notStarted
         isStarting = false
-        selectWindow(window)
+        selectWindow(selectedWindow!)
     }
 
     /// Starts the translation pipeline with the provided session.
@@ -415,8 +436,18 @@ struct ContentView: View {
         }
     }
 
-    /// Stops the translation pipeline and returns to window selection.
+    /// Stops the translation pipeline (stays on translation view with play button).
     private func stopTranslation() {
+        Task {
+            await pipeline.stop()
+            // Don't clear selectedWindow - stay on translation view showing idle state with play button
+            // translationSession is kept so we can restart quickly
+            isStarting = false
+        }
+    }
+
+    /// Returns to window selection (clears everything).
+    private func returnToWindowPicker() {
         Task {
             await pipeline.stop()
             selectedWindow = nil

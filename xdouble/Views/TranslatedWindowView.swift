@@ -15,6 +15,9 @@ struct TranslatedWindowView: View {
     /// Callback when stop button is pressed
     let onStop: () -> Void
 
+    /// Callback when play button is pressed (to restart translation)
+    let onPlay: () -> Void
+
     /// Whether to show the stats overlay
     @State private var showStats = true
 
@@ -33,11 +36,13 @@ struct TranslatedWindowView: View {
                     Label("Stats", systemImage: "chart.bar")
                 }
                 .help("Toggle performance stats")
+                .accessibilityIdentifier("statsToggle")
 
                 Button(action: onStop) {
                     Label("Stop", systemImage: "stop.fill")
                 }
                 .help("Stop translation")
+                .accessibilityIdentifier("stopButton")
             }
         }
     }
@@ -60,9 +65,13 @@ struct TranslatedWindowView: View {
         VStack(spacing: 16) {
             switch pipeline.state {
             case .idle:
-                Image(systemName: "play.circle")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.secondary)
+                Button(action: onPlay) {
+                    Image(systemName: "play.circle")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("playButton")
                 Text("Ready")
                     .font(.headline)
                     .foregroundStyle(.secondary)
@@ -99,6 +108,9 @@ struct TranslatedWindowView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
+                Button("Retry", action: onPlay)
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("retryButton")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -180,7 +192,8 @@ struct TranslatedWindowView: View {
     let pipeline = TranslationPipeline()
     return TranslatedWindowView(
         pipeline: pipeline,
-        onStop: { print("Stop pressed") }
+        onStop: { print("Stop pressed") },
+        onPlay: { print("Play pressed") }
     )
 }
 
@@ -188,6 +201,7 @@ struct TranslatedWindowView: View {
     let pipeline = TranslationPipeline()
     return TranslatedWindowView(
         pipeline: pipeline,
-        onStop: { print("Stop pressed") }
+        onStop: { print("Stop pressed") },
+        onPlay: { print("Play pressed") }
     )
 }

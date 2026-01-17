@@ -1,1 +1,0 @@
-**Fix: Remove unused containsEnglishText helper function** - Completion: Remove the dead code `containsEnglishText` function at xdoubleTests/TranslationPipelineTests.swift:392 which is defined but never called
