@@ -37,7 +37,7 @@
   - Priority: high
   - Dependencies: none
 
-- [ ] **Implement smart text filtering** - Completion: TextFilter.shouldTranslate(_:) returns false for numbers-only, single chars, low-confidence, and English text; all filter unit tests pass
+- [x] **Implement smart text filtering** - Completion: TextFilter.shouldTranslate(_:) returns false for numbers-only, single chars, low-confidence, and English text; all filter unit tests pass
   - Priority: medium
   - Dependencies: Create data models
 
@@ -97,7 +97,7 @@
   - Priority: high
   - Dependencies: TranslationService
 
-- [ ] **Write TextFilter unit tests** - Completion: Tests cover all filter conditions (numbers, single char, low confidence, English text)
+- [x] **Write TextFilter unit tests** - Completion: Tests cover all filter conditions (numbers, single char, low confidence, English text)
   - Priority: medium
   - Dependencies: Text filtering implementation
 

@@ -1,1 +1,1 @@
-**Fix: Consider CaptureWindow Sendable conformance** - Completion: Either remove Sendable conformance from CaptureWindow, use @unchecked Sendable with documentation explaining safety, or copy only the necessary data from SCWindow
+**Implement smart text filtering** - Completion: TextFilter.shouldTranslate(_:) returns false for numbers-only, single chars, low-confidence, and English text; all filter unit tests pass
