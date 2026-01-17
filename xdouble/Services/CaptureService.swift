@@ -246,6 +246,8 @@ final class CaptureService: NSObject, ObservableObject {
 /// Stream output handler that converts sample buffers to CapturedFrame.
 private final class CaptureStreamOutput: NSObject, SCStreamOutput, @unchecked Sendable {
     private let onFrame: @Sendable (CapturedFrame) -> Void
+    /// Reused CIContext for efficient image conversion across frames
+    private let ciContext = CIContext()
 
     init(onFrame: @escaping @Sendable (CapturedFrame) -> Void) {
         self.onFrame = onFrame
@@ -258,9 +260,8 @@ private final class CaptureStreamOutput: NSObject, SCStreamOutput, @unchecked Se
         guard let imageBuffer = sampleBuffer.imageBuffer else { return }
 
         let ciImage = CIImage(cvImageBuffer: imageBuffer)
-        let context = CIContext()
 
-        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
 
         // Get content rect from attachments if available
         var contentRect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)

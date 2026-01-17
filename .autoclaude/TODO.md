@@ -4,6 +4,15 @@
 
 ## Pending
 
+- [x] **Fix: Reuse CIContext in CaptureStreamOutput** - Completion: CIContext is stored as a property in CaptureStreamOutput and reused across stream callback invocations instead of being created per-frame
+  - Priority: low
+
+- [ ] **Fix: Correct content rect type cast in CaptureStreamOutput** - Completion: The attachment[.contentRect] cast uses the correct type (likely CGRect or NSDictionary) and successfully extracts content rect values
+  - Priority: low
+
+- [ ] **Fix: Consider CaptureWindow Sendable conformance** - Completion: Either remove Sendable conformance from CaptureWindow, use @unchecked Sendable with documentation explaining safety, or copy only the necessary data from SCWindow
+  - Priority: low
+
 ### Phase 1: Project Setup & Foundation
 
 - [x] **Configure entitlements for screen recording** - Completion: xdouble.entitlements file exists with com.apple.security.screen-recording key set to true, and project.pbxproj references it

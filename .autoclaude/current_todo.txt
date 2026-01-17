@@ -1,1 +1,1 @@
-**Implement CaptureService** - Completion: CaptureService can enumerate available windows and capture frames from a selected window at configurable FPS; unit test passes with mock content
+**Fix: Reuse CIContext in CaptureStreamOutput** - Completion: CIContext is stored as a property in CaptureStreamOutput and reused across stream callback invocations instead of being created per-frame

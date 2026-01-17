@@ -1,42 +1,51 @@
-APPROVED
+MINOR_ISSUES
 
 ## Summary
+Reviewed the CaptureService implementation and related models. The code is well-structured, follows ScreenCaptureKit best practices, and all 8 unit tests pass. The implementation correctly handles window enumeration, frame capture via AsyncStream, and permission checking.
 
-Reviewed commit `052099b`: Add TextRegion and TranslatedFrame data models
+## Minor Issues Found
 
-### What Was Reviewed
+### 1. CIContext created per-frame (Performance)
+**File:** `xdouble/Services/CaptureService.swift:260-262`
 
-**New Files:**
-- `xdouble/Models/TextRegion.swift` - Data model for OCR-detected text regions
-- `xdouble/Models/TranslatedFrame.swift` - Data model for processed frames with translations
+In `CaptureStreamOutput.stream()`, a new `CIContext()` is created for every frame:
+```swift
+let ciImage = CIImage(cvImageBuffer: imageBuffer)
+let context = CIContext()
+guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+```
 
-### Verification Results
+`CIContext` is expensive to create and should be reused across frames. At 1-2 FPS this is acceptable but wasteful. Should be moved to a property.
 
-1. **Build**: ✅ `xcodebuild -scheme xdouble build` succeeds
-2. **Tests**: ✅ All 5 tests pass (1 unit, 4 UI tests)
-3. **Strict Concurrency**: ✅ No warnings with `-strict-concurrency=complete`
+### 2. Content rect parsing may fail silently
+**File:** `xdouble/Services/CaptureService.swift:267-275`
 
-### Code Quality Assessment
+The code casts `attachment[.contentRect]` to `[String: CGFloat]`:
+```swift
+if let rectDict = attachment[.contentRect] as? [String: CGFloat] {
+```
 
-**TextRegion.swift:**
-- Correctly implements `Identifiable`, `Sendable`, `Equatable`, `Hashable`
-- `absoluteBoundingBox(for:)` coordinate conversion is mathematically correct:
-  - Properly flips Y-axis from Vision (bottom-left origin) to CoreGraphics (top-left origin)
-  - Correctly scales normalized coordinates (0.0-1.0) to pixel coordinates
-- Well-documented with clear parameter descriptions
+ScreenCaptureKit may store the content rect differently (as `CGRect` or `[String: Any]` with `NSNumber` values). This cast may fail silently. The fallback to image dimensions prevents crashes but may lose accurate content rect data.
 
-**TranslatedFrame.swift:**
-- Clean data model with computed properties for performance metrics
-- `translatedRegionCount`, `performanceDescription`, `effectiveFPS` are useful utilities
-- Proper use of `NSImage` which has Sendable conformance in macOS 15+
+### 3. Sendable conformance with SCWindow
+**File:** `xdouble/Services/CaptureService.swift:14-28`
 
-### Architecture Notes
-- Files are properly included via Xcode's `PBXFileSystemSynchronizedRootGroup` (Xcode 26 feature)
-- Screen recording entitlements correctly configured from previous commit
-- Models align with the architecture defined in `.autoclaude/plan.md`
+`CaptureWindow` is marked `Sendable` but contains `scWindow: SCWindow`, which is an `NSObject`. While SCWindow is likely thread-safe in practice, this isn't formally guaranteed by the type system.
 
-### No Issues Found
-- No security vulnerabilities
-- No bugs or logic errors
-- Code follows coding guidelines
-- Tests for these models are planned for Phase 6 per the TODO.md roadmap
+## What's Working Well
+
+- Clean separation of concerns with `CaptureWindow`, `CapturedFrame`, and `CaptureError` types
+- Proper use of `@MainActor` for the service
+- AsyncStream-based frame delivery with proper cleanup
+- Good error messages in `CaptureError.errorDescription`
+- Permission handling with both preflight and request methods
+- Window filtering excludes own app's windows
+- FPS clamping to reasonable range (0.1-30)
+- Tests verify initial state, error descriptions, and basic functionality
+
+## Test Results
+All tests pass:
+- CaptureServiceTests: 7 tests passed
+- xdoubleTests: 1 test passed
+- xdoubleUITests: 2 tests passed
+- xdoubleUITestsLaunchTests: 2 tests passed (parallel)
