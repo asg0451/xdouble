@@ -75,14 +75,16 @@ final class RealTranslationE2ETests: XCTestCase {
         // The translation view can show various elements depending on state:
         // - waitingView: when pipeline is starting/running but no frames yet
         // - statsPanel: when stats overlay is visible (may be in different element types)
-        // - stopButton: toolbar button that indicates we're in translation view
+        // - stopButton: toolbar button when pipeline is running
+        // - playButton: toolbar button when pipeline is idle (paused)
         let waitingView = app.otherElements["waitingView"]
         let stopButton = app.buttons["stopButton"]
+        let playButton = app.buttons["playButton"]
 
-        // First, wait for either the waiting view or stop button to appear
+        // First, wait for either the waiting view or stop/play button to appear
         // This indicates we've transitioned to the translation view
         let translationViewAppears = NSPredicate { _, _ in
-            return waitingView.exists || stopButton.exists
+            return waitingView.exists || stopButton.exists || playButton.exists
         }
 
         let expectation = expectation(for: translationViewAppears, evaluatedWith: nil)
@@ -163,7 +165,19 @@ final class RealTranslationE2ETests: XCTestCase {
 
         // Test passed - translation actually processed frames from the Chinese content
 
-        // TODO: Test stop button functionality once it's working
+        // Step 8: Test stop button functionality
+        XCTAssertTrue(stopButton.waitForExistence(timeout: 5), "Stop button should exist while running")
+        stopButton.click()
+
+        // Step 9: Verify play button appears after stopping
+        let playButton = app.buttons["playButton"]
+        XCTAssertTrue(playButton.waitForExistence(timeout: 5), "Play button should appear after stopping")
+
+        // Step 10: Test resume - click play button
+        playButton.click()
+
+        // Step 11: Verify stop button reappears (translation resumed)
+        XCTAssertTrue(stopButton.waitForExistence(timeout: 10), "Stop button should reappear after resuming")
     }
 
     // TODO: Add test with animated content (video/GIF in browser, scrolling content)

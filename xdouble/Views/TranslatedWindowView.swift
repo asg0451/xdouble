@@ -57,11 +57,19 @@ struct TranslatedWindowView: View {
                 }
                 .help("Adjust font size")
 
-                Button(action: onStop) {
-                    Label("Stop", systemImage: "stop.fill")
+                if case .running = pipeline.state {
+                    Button(action: onStop) {
+                        Label("Stop", systemImage: "stop.fill")
+                    }
+                    .help("Stop translation")
+                    .accessibilityIdentifier("stopButton")
+                } else if case .idle = pipeline.state {
+                    Button(action: onPlay) {
+                        Label("Play", systemImage: "play.fill")
+                    }
+                    .help("Resume translation")
+                    .accessibilityIdentifier("playButton")
                 }
-                .help("Stop translation")
-                .accessibilityIdentifier("stopButton")
             }
         }
     }
