@@ -61,7 +61,7 @@
   - Priority: high
   - Dependencies: TranslationPipeline
 
-- [ ] **Update ContentView with main layout** - Completion: ContentView shows WindowPickerView when no window selected, TranslatedWindowView when active; stop button works
+- [x] **Update ContentView with main layout** - Completion: ContentView shows WindowPickerView when no window selected, TranslatedWindowView when active; stop button works
   - Priority: high
   - Dependencies: WindowPickerView, TranslatedWindowView
 

@@ -1,28 +1,49 @@
 APPROVED
 
 ## Summary
-Reviewed 5 recent commits implementing core components of the xdouble translation pipeline:
+Reviewed the latest batch of commits implementing core translation pipeline components:
 
-1. **WindowPickerView** - Window selection UI with grid layout, thumbnails, hover effects, and error handling
-2. **TranslationPipeline** - Actor orchestrating capture→OCR→filter→translate→render flow with caching
-3. **OverlayRenderer** - CoreGraphics-based text overlay with background sampling and contrast selection
-4. **TextFilter** - Smart filtering for numbers, single chars, English text, and low-confidence results
-5. **CaptureWindow Sendable fix** - Proper Sendable conformance by separating SCWindow storage
+1. **TranslationPipeline.swift** - Well-structured actor that orchestrates capture→OCR→filter→translate→render flow with proper thread safety, caching, and error handling.
+
+2. **OverlayRenderer.swift** - CoreGraphics-based text overlay compositor with background color sampling for contrast, proper coordinate conversion, and font sizing.
+
+3. **TextFilter.swift** - Smart filtering to skip translation of numbers, single characters, low-confidence OCR results, and already-English text.
+
+4. **TranslatedWindowView.swift** - SwiftUI view displaying translated frames with performance stats overlay and proper state handling.
+
+5. **WindowPickerView.swift** - Window selection UI with thumbnail previews, error handling, and permission guidance.
 
 ## Test Results
-All 65 tests pass:
-- TextFilterTests: 21 tests covering all filter conditions
-- OverlayRendererTests: 15 tests including pixel comparison
-- OCRServiceTests: 11 tests with generated Chinese text images
-- TranslationServiceTests: 10 tests including cache behavior
-- CaptureServiceTests: 8 tests for service initialization and errors
+All 67+ tests pass including:
+- TextFilterTests (22 tests) - Comprehensive coverage of filtering logic
+- OverlayRendererTests (15 tests) - Rendering with various inputs
+- OCRServiceTests - Chinese text detection
+- TranslationServiceTests - Translation service and caching
+- CaptureServiceTests - Window capture basics
+- TranslationServiceIntegrationTests - Integration with Translation framework
 
 ## Code Quality
-- Proper async/await and actor isolation patterns
-- Good error handling with LocalizedError conformance
-- Sendable conformance correctly implemented
-- Well-structured SwiftUI views with proper state management
+- Clean separation of concerns with dedicated services
+- Proper async/await usage with Swift actors for thread safety
+- Comprehensive error types with LocalizedError conformance
+- Good use of SwiftUI patterns (@ObservedObject, @Published)
+- Sensible defaults with customizable parameters
 
-## Notes
-- E2E pipeline integration test is not yet implemented (listed as pending in TODO.md)
-- TODO.md shows OverlayRenderer tests as incomplete but they exist and pass - minor doc sync issue
+## Edge Cases Handled
+- Empty input arrays
+- Missing translations (nil handling)
+- Low confidence OCR results filtered
+- Pure numbers skipped
+- Single characters skipped
+- Already-English text skipped
+- Long translations with font size adjustment
+- Background color sampling with bounds checking
+- Translation caching with LRU-style eviction
+
+## Security
+- Screen recording permission properly checked before capture
+- No hardcoded credentials or sensitive data
+- System URL scheme used for opening System Settings
+
+## Note
+The ContentView and xdoubleApp haven't been updated yet to integrate these components - this is the expected next step per the implementation plan, not a bug in the reviewed code.

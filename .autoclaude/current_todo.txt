@@ -1,1 +1,1 @@
-**Implement TranslatedWindowView** - Completion: SwiftUI view displays TranslatedFrame images; updates at frame rate from pipeline
+**Update ContentView with main layout** - Completion: ContentView shows WindowPickerView when no window selected, TranslatedWindowView when active; stop button works
