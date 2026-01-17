@@ -47,7 +47,7 @@
 
 ### Phase 3: Pipeline Integration
 
-- [ ] **Implement TranslationPipeline actor** - Completion: TranslationPipeline.start(window:) orchestrates capture→OCR→filter→translate→render flow; publishes TranslatedFrame via Combine/AsyncSequence
+- [x] **Implement TranslationPipeline actor** - Completion: TranslationPipeline.start(window:) orchestrates capture→OCR→filter→translate→render flow; publishes TranslatedFrame via Combine/AsyncSequence
   - Priority: high
   - Dependencies: CaptureService, OCRService, TranslationService, OverlayRenderer
 

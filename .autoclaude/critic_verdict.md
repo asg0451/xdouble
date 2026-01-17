@@ -2,43 +2,40 @@ APPROVED
 
 ## Summary
 
-Reviewed the latest changes implementing smart text filtering for the translation pipeline. The implementation is correct, well-structured, and thoroughly tested.
+Reviewed the latest 5 commits implementing core translation services:
 
-### Files Reviewed
-- `xdouble/Services/TextFilter.swift` - New smart text filtering service
-- `xdoubleTests/TextFilterTests.swift` - Comprehensive test suite (27 test cases)
-- All previously implemented services: CaptureService, OCRService, TranslationService
-- Data models: TextRegion, TranslatedFrame
-- Entitlements configuration
+1. **CaptureService.swift** - Fixed Sendable conformance by storing SCWindow references separately in a `scWindowsByID` dictionary, keeping `CaptureWindow` struct clean and Sendable-compliant.
 
-### Test Results
-All 53 tests pass:
-- TextFilterTests: 27 tests covering all filter conditions
-- OCRServiceTests: 11 tests for Chinese text detection
-- TranslationServiceTests: 12 tests for translation service
-- CaptureServiceTests: 7 tests for window capture
-- UI tests: 4 tests
+2. **TranslationService.swift** - New service wrapping Apple's Translation framework for zh-Hans → English translation. Includes language availability checking, batch translation support, and a simple TranslationCache actor.
 
-### Code Quality Assessment
-1. **TextFilter** - Correctly implements filtering for:
+3. **TextFilter.swift** - Smart filtering to skip translation of:
    - Empty/whitespace text
    - Single characters
-   - Low confidence OCR results (configurable threshold, default 0.5)
-   - Numbers-only text (including decimals, percentages, formatted numbers)
-   - Primarily-English text (>70% Latin characters)
+   - Numbers-only content (including formatted: "1,234.56%")
+   - Low-confidence OCR results (< 0.5 default threshold)
+   - Primarily English text (>70% Latin characters)
 
-2. **Sendable Conformance** - All data types properly implement Sendable
-3. **Error Handling** - All services have proper error enums with localized descriptions
-4. **Thread Safety** - CaptureService uses MainActor isolation correctly; uses nonisolated(unsafe) appropriately for AsyncStream.Continuation
+4. **OverlayRenderer.swift** - CoreGraphics-based text overlay compositor that:
+   - Samples background color from bounding box edges
+   - Calculates appropriate font size based on box dimensions
+   - Applies contrasting text color based on luminance
 
-### No Security Issues Found
-- Entitlements properly configured with screen-recording permission
-- No injection vulnerabilities
-- Proper permission checking before capture operations
+## Tests
 
-### Outstanding Work (Per TODO.md - Not Blocking Issues)
-The following are planned future tasks, not issues with current code:
-- OverlayRenderer implementation
-- TranslationPipeline actor
-- UI views (WindowPickerView, TranslatedWindowView, ContentView updates)
-- E2E integration test
+**All 70+ tests pass**, including:
+- Unit tests for all new services
+- Edge case coverage (empty arrays, long text, various backgrounds)
+- Integration tests that gracefully handle unavailable translation models
+
+## Code Quality
+
+- Clean, readable Swift code following project conventions
+- Custom error types conforming to LocalizedError
+- Proper thread safety using @MainActor and actors
+- Good separation of concerns between services
+
+## Notes
+
+- OverlayRenderer tests are complete but TODO.md shows them unchecked
+- E2E pipeline integration test is tracked in TODO.md for Phase 6
+- TranslationCache uses simple "clear-all" eviction (documented, acceptable for MVP)

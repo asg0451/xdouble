@@ -1,1 +1,1 @@
-**Implement OverlayRenderer** - Completion: OverlayRenderer.render(regions:onto:) produces NSImage with translated text overlaid; visual inspection test or pixel comparison test passes
+**Implement TranslationPipeline actor** - Completion: TranslationPipeline.start(window:) orchestrates capture→OCR→filter→translate→render flow; publishes TranslatedFrame via Combine/AsyncSequence
