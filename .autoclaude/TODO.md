@@ -10,7 +10,7 @@
   - Priority: high
   - Dependencies: none
 
-- [ ] **Create data models** - Completion: TextRegion.swift and TranslatedFrame.swift exist with documented structs that compile without errors
+- [x] **Create data models** - Completion: TextRegion.swift and TranslatedFrame.swift exist with documented structs that compile without errors
   - Priority: high
   - Dependencies: none
 
