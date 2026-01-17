@@ -120,7 +120,7 @@ final class TranslationPipeline: ObservableObject {
     init() {
         self.captureService = CaptureService()
         self.ocrService = OCRService(minimumConfidence: 0.0)
-        self.textFilter = TextFilter(minimumConfidence: 0.5)
+        self.textFilter = TextFilter(minimumConfidence: 0.3)
         self.translationService = TranslationService()
         self.overlayRenderer = OverlayRenderer()
         self.translationCache = TranslationCache()
