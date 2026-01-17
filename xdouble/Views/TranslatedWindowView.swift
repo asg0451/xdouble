@@ -27,6 +27,17 @@ struct TranslatedWindowView: View {
     /// Local font size multiplier (synced to pipeline)
     @State private var fontSizeMultiplier: CGFloat = 1.0
 
+    // MARK: - Zoom/Pan State
+
+    /// Current zoom scale (1.0 = original size)
+    @State private var scale: CGFloat = 1.0
+    /// Tracking scale during gesture
+    @State private var lastScale: CGFloat = 1.0
+    /// Current pan offset
+    @State private var offset: CGSize = .zero
+    /// Tracking offset during gesture
+    @State private var lastOffset: CGSize = .zero
+
     var body: some View {
         ZStack {
             frameView
@@ -51,6 +62,13 @@ struct TranslatedWindowView: View {
                 }
                 .help("Toggle performance stats")
                 .accessibilityIdentifier("statsToggle")
+
+                Button(action: resetZoom) {
+                    Label("Reset Zoom", systemImage: "1.magnifyingglass")
+                }
+                .help("Reset zoom to 1x")
+                .disabled(scale == 1.0 && offset == .zero)
+                .accessibilityIdentifier("resetZoomButton")
 
                 HStack(spacing: 4) {
                     Button(action: decreaseFontSize) {
@@ -90,13 +108,67 @@ struct TranslatedWindowView: View {
     @ViewBuilder
     private var frameView: some View {
         if let frame = pipeline.currentFrame {
-            Image(nsImage: frame.image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .background(Color(nsColor: .windowBackgroundColor))
+            GeometryReader { geometry in
+                Image(nsImage: frame.image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .scaleEffect(scale)
+                    .offset(offset)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .contentShape(Rectangle())
+                    .gesture(magnifyGesture)
+                    .gesture(dragGesture)
+            }
+            .clipped()
+            .background(Color(nsColor: .windowBackgroundColor))
         } else {
             waitingView
         }
+    }
+
+    // MARK: - Zoom/Pan Gestures
+
+    private var magnifyGesture: some Gesture {
+        MagnifyGesture()
+            .onChanged { value in
+                // Use lastScale as the base, multiply by gesture magnification
+                let newScale = lastScale * value.magnification
+                // Clamp to valid range and ensure finite
+                scale = min(max(newScale, 1.0), 5.0)
+            }
+            .onEnded { _ in
+                // Store current scale as base for next gesture
+                lastScale = scale
+                // Reset offset if zoomed out to 1x
+                if scale == 1.0 {
+                    offset = .zero
+                    lastOffset = .zero
+                }
+            }
+    }
+
+    private var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                // Only allow panning when zoomed in
+                guard scale > 1.0 else { return }
+                offset = CGSize(
+                    width: lastOffset.width + value.translation.width,
+                    height: lastOffset.height + value.translation.height
+                )
+            }
+            .onEnded { _ in
+                lastOffset = offset
+            }
+    }
+
+    private func resetZoom() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            scale = 1.0
+            offset = .zero
+        }
+        lastScale = 1.0
+        lastOffset = .zero
     }
 
     private var waitingView: some View {
