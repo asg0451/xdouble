@@ -2,16 +2,9 @@
 
 **Current Step:** coder
 **TODO #:** 18
-**Current TODO:** **Add screen recording permission handling** - COMPLETED
+**Current TODO:** COMPLETED - **Fix: Add partial E2E integration test**
 **Goal:** in this newly-initialized swiftui xcode project called xdouble, i want to create an app that can live translate a stream of video from another app's window. my use case is using iphone mirroring to stream an app in another language to the mac running the program - then the program will have another window showing the contents of the app but with text translated (like google translate does for screenshots). i have never written a mac app before so please try extra hard to catch errors as i probably won't. i also have never dealt with live video in place text translation before so dont know the state of the art there. i would prefer something local but would be willing to use an api or smth if required. i'm also prepared to make sacrifices on the translated frame rate if necessary. it should support only simplified mandarin for now, at 1-2 fps.
 **Test Command:** whatever is standard for swiftui and configured in this project. make sure to include a verifiable e2e integration test
 
 ## Latest Update
-Completed: **Add screen recording permission handling**
-
-Added proactive permission detection and a dedicated permission-denied view in ContentView.swift:
-- App checks permission status on launch (via `.task` modifier)
-- Shows a clear "Screen Recording Permission Required" screen when permission is denied
-- Provides an "Open System Settings" button that opens the correct Privacy pane (`x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture`)
-- Re-checks permission when app becomes active (via `NSApplication.didBecomeActiveNotification`)
-- Error alerts also include "Open System Settings" button for permission-related errors
+Completed: **Fix: Add partial E2E integration test** - Created TranslationPipelineTests.swift with 6 tests that verify the OCR→filter→render pipeline works correctly. All tests pass.

@@ -1,48 +1,53 @@
-APPROVED
+MINOR_ISSUES
 
-## Summary of Review
+## Summary
+Reviewed the latest 5 commits implementing screen recording permission handling, window picker UI, translated window view, and app lifecycle management for the xdouble live translation app.
 
-Reviewed the latest commits implementing the UI layer for xdouble (Phase 4 of the plan):
-- `fab7c64` Add proper windowing and app lifecycle management to xdoubleApp
-- `00626c3` Fix Swift 6 concurrency warnings for Sendable types
-- `f7cfb1a` Implement ContentView with main layout for window selection and translation display
-- `7acd937` Implement TranslatedWindowView for displaying translated frames
-- `9794fea` Implement WindowPickerView for window selection UI
-
-## Verification Results
-
-**Build Status**: SUCCESS - No warnings or errors
-
-**Test Results**: ALL PASS (78+ tests)
-- CaptureServiceTests (6 tests)
-- OCRServiceTests (9 tests)
-- OverlayRendererTests (14 tests)
-- TextFilterTests (21 tests)
-- TranslationServiceTests (10 tests)
-- TranslationServiceIntegrationTests (2 tests)
-- UI Tests (4 tests)
+**Build Status:** PASS
+**Unit Tests:** All 63+ tests pass across 7 test suites
 
 ## Code Quality Assessment
 
-1. **Architecture**: Well-structured SwiftUI code following the plan's design:
-   - `WindowPickerView`: Clean grid-based window picker with thumbnails, loading/error states
-   - `TranslatedWindowView`: Proper frame display with performance stats overlay
-   - `ContentView`: Correctly orchestrates window selection → translation flow
-   - `xdoubleApp`: Proper lifecycle management and permission checking
+### Strengths
+1. **Clean architecture**: Well-separated services (CaptureService, OCRService, TranslationService, OverlayRenderer) with the TranslationPipeline actor orchestrating the flow
+2. **Proper Swift 6 concurrency**: Correct use of `@MainActor`, actors, `Sendable` conformance, and async/await
+3. **Good error handling**: All services have proper error enums with `LocalizedError` conformance
+4. **Comprehensive unit tests**: Individual components (OCRService, TranslationService, TextFilter, OverlayRenderer, CaptureService) have thorough test coverage
+5. **Permission handling**: Proper screen recording permission flow with user-friendly UI and deep link to System Settings
 
-2. **Concurrency Safety**: Swift 6 concurrency warnings resolved with proper:
-   - `@MainActor` isolation on UI-bound classes
-   - `nonisolated` annotations on thread-safe services
-   - Proper Sendable conformance on data models
+### Minor Issues Found
 
-3. **Error Handling**: Comprehensive coverage:
-   - Permission denied → Opens System Settings
-   - No windows available → Clear empty state UI
-   - Translation errors → Alert with error message
-   - Loading states → Progress indicators
+1. **Missing E2E Integration Test**: The plan (`plan.md:137-144`) specifies a `TranslationPipelineIntegrationTests` that should:
+   - Load a test image with Chinese text from test bundle
+   - Run through the full OCR → translate → render pipeline
+   - Verify output image is different from input
+   - Verify translated text appears via secondary OCR pass
 
-4. **Entitlements**: Correctly configured (`com.apple.security.screen-recording: true`)
+   This test is not implemented. While individual component tests provide good coverage, there's no test verifying the complete pipeline flow. Note: Creating this test is challenging due to `TranslationSession` only being available via SwiftUI's `.translationTask` modifier.
 
-## Pre-existing Items (Not Blocking)
+2. **Unusual `nonisolated` type declarations**: The codebase uses `nonisolated struct` and `nonisolated final class` syntax (e.g., `TextRegion.swift:13`, `TextFilter.swift:13`, `OCRService.swift:32`, `OverlayRenderer.swift:32`). While valid in Swift 6, this is unconventional. The typical approach is to simply mark types as `Sendable` without the `nonisolated` prefix, as `Sendable` types are inherently safe across actor boundaries.
 
-The E2E integration test mentioned in the plan is tracked in TODO.md as a pending item - this was not introduced by the reviewed commits and does not block approval.
+3. **Boilerplate UI tests**: `xdoubleUITests.swift` contains only Xcode-generated placeholder tests. The plan mentions UI tests should "test window picker UI elements exist" and "test settings controls work" - these are not implemented.
+
+## Test Results
+```
+** TEST SUCCEEDED **
+
+All test suites passed:
+- TextFilterTests (20 tests)
+- OCRServiceTests (10 tests)
+- TranslationServiceTests (10 tests)
+- TranslationServiceIntegrationTests (2 tests)
+- CaptureServiceTests (7 tests)
+- OverlayRendererTests (14 tests)
+- xdoubleTests (1 test)
+```
+
+## Files Reviewed
+- `xdouble/ContentView.swift` - Main UI with permission handling and translation flow
+- `xdouble/xdoubleApp.swift` - App lifecycle and window management
+- `xdouble/Views/TranslatedWindowView.swift` - Output display with stats overlay
+- `xdouble/Views/WindowPickerView.swift` - Window selection UI
+- `xdouble/Pipeline/TranslationPipeline.swift` - Pipeline orchestration
+- `xdouble/Services/*` - All service implementations
+- `xdoubleTests/*` - All test files

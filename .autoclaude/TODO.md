@@ -4,7 +4,13 @@
 
 ## Pending
 
-- [ ] **Fix: Add partial E2E integration test** - Completion: TranslationPipelineTests.swift exists with a test that loads a test image, runs OCR→filter→render (without actual translation due to TranslationSession API limitation), and verifies output image differs from input and rendering completed without error
+- [x] **Fix: Add partial E2E integration test** - Completion: TranslationPipelineTests.swift exists with a test that loads a test image, runs OCR→filter→render (without actual translation due to TranslationSession API limitation), and verifies output image differs from input and rendering completed without error
+  - Priority: low
+
+- [ ] **Fix: Remove unconventional `nonisolated` type prefixes** - Completion: Remove `nonisolated` keyword from type declarations in TextRegion.swift, TextFilter.swift, OCRService.swift, and OverlayRenderer.swift. Types should just conform to `Sendable` without the `nonisolated` prefix, which is the conventional approach.
+  - Priority: low
+
+- [ ] **Fix: Add meaningful UI tests** - Completion: xdoubleUITests.swift contains tests that verify window picker UI elements exist, refresh button works, and window cards are displayed when windows are available
   - Priority: low
 
 - [x] **Fix: Swift 6 concurrency warnings** - Completion: Resolve MainActor isolation warnings in OCRService and TextRegion so the code compiles without warnings in Swift 6 language mode
