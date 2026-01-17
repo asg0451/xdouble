@@ -1,1 +1,1 @@
-**Write OCRService unit tests** - Completion: Tests in xdoubleTests verify OCR detects Chinese text in test image with correct bounding boxes
+**Write OverlayRenderer unit tests** - Completion: Tests verify rendered output dimensions match input; output differs from input when text regions provided

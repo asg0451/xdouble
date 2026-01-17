@@ -113,7 +113,7 @@
   - Priority: medium
   - Dependencies: Text filtering implementation
 
-- [ ] **Write OverlayRenderer unit tests** - Completion: Tests verify rendered output dimensions match input; output differs from input when text regions provided
+- [x] **Write OverlayRenderer unit tests** - Completion: Tests verify rendered output dimensions match input; output differs from input when text regions provided
   - Priority: medium
   - Dependencies: OverlayRenderer
 
