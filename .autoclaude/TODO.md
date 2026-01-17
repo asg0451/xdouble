@@ -4,6 +4,9 @@
 
 ## Pending
 
+- [ ] **Fix: Remove unused containsEnglishText helper function** - Completion: Remove the dead code `containsEnglishText` function at xdoubleTests/TranslationPipelineTests.swift:392 which is defined but never called
+  - Priority: low
+
 - [x] **Fix: Add partial E2E integration test** - Completion: TranslationPipelineTests.swift exists with a test that loads a test image, runs OCR→filter→render (without actual translation due to TranslationSession API limitation), and verifies output image differs from input and rendering completed without error
   - Priority: low
 
@@ -123,7 +126,7 @@
 
 ### Phase 7: Build Verification
 
-- [ ] **Verify app builds and runs** - Completion: `xcodebuild -scheme xdouble build` succeeds; app launches without crash
+- [x] **Verify app builds and runs** - Completion: `xcodebuild -scheme xdouble build` succeeds; app launches without crash
   - Priority: high
   - Dependencies: All implementation tasks
 

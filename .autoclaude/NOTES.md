@@ -101,3 +101,7 @@ Technical debt, observations, and other notes from the critic.
 - [2026-01-17 14:00:38] Session ended, transcript: /Users/miles/.claude/projects/-Users-miles-proj-xdouble/19734600-6f5f-42ac-9e08-52aa056d4cbc.jsonl
 
 - [2026-01-17 14:04:55] Session ended, transcript: /Users/miles/.claude/projects/-Users-miles-proj-xdouble/d3988b10-af5b-44e5-a2ef-40ee454f4f50.jsonl
+
+- [2026-01-17 14:08:19] Session ended, transcript: /Users/miles/.claude/projects/-Users-miles-proj-xdouble/18229acb-da74-4d2e-ae8e-34ecca795570.jsonl
+
+- [2026-01-17 14:12:29] Session ended, transcript: /Users/miles/.claude/projects/-Users-miles-proj-xdouble/f4ff2d60-f009-44da-9256-50e77d7a14fa.jsonl

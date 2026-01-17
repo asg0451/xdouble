@@ -1,1 +1,1 @@
-**Write TranslationPipeline integration test (E2E)** - Completion: Test loads test image from bundle, runs full pipeline (OCR→filter→translate→render), verifies output contains English text via OCR re-scan; this is the verifiable E2E test
+**Fix: Remove unused containsEnglishText helper function** - Completion: Remove the dead code `containsEnglishText` function at xdoubleTests/TranslationPipelineTests.swift:392 which is defined but never called
