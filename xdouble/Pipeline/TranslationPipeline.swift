@@ -71,6 +71,9 @@ final class TranslationPipeline: ObservableObject {
     /// Whether a frame is currently being processed
     @Published private(set) var isProcessing: Bool = false
 
+    /// Font size multiplier for translated text (0.5 to 2.0)
+    var fontSizeMultiplier: CGFloat = 1.0
+
     // MARK: - Services
 
     /// Service for capturing window frames
@@ -242,6 +245,9 @@ final class TranslationPipeline: ObservableObject {
     func processFrame(_ frame: CapturedFrame, session: TranslationSession) async throws -> TranslatedFrame {
         let startTime = Date()
 
+        // Capture font size multiplier at start to avoid accessing @Published during rendering
+        let currentFontSizeMultiplier = fontSizeMultiplier
+
         // Step 1: OCR - detect text regions
         let allRegions: [TextRegion]
         do {
@@ -266,7 +272,11 @@ final class TranslationPipeline: ObservableObject {
         do {
             // Convert CGImage to NSImage for rendering
             let sourceImage = NSImage(cgImage: frame.image, size: NSSize(width: frame.image.width, height: frame.image.height))
-            renderedImage = try overlayRenderer.render(regions: translatedRegions, onto: sourceImage)
+            renderedImage = try overlayRenderer.render(
+                regions: translatedRegions,
+                onto: sourceImage,
+                fontSizeMultiplier: currentFontSizeMultiplier
+            )
         } catch {
             throw PipelineError.renderingError(error)
         }

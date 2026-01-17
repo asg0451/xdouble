@@ -21,6 +21,9 @@ struct TranslatedWindowView: View {
     /// Whether to show the stats overlay
     @State private var showStats = true
 
+    /// Local font size multiplier (synced to pipeline)
+    @State private var fontSizeMultiplier: CGFloat = 1.0
+
     var body: some View {
         ZStack {
             frameView
@@ -37,6 +40,22 @@ struct TranslatedWindowView: View {
                 }
                 .help("Toggle performance stats")
                 .accessibilityIdentifier("statsToggle")
+
+                HStack(spacing: 4) {
+                    Button(action: decreaseFontSize) {
+                        Image(systemName: "minus")
+                    }
+                    .accessibilityIdentifier("fontSizeDecrease")
+                    Text(String(format: "%.0f%%", fontSizeMultiplier * 100))
+                        .font(.caption.monospacedDigit())
+                        .frame(width: 40)
+                        .accessibilityIdentifier("fontSizeLabel")
+                    Button(action: increaseFontSize) {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityIdentifier("fontSizeIncrease")
+                }
+                .help("Adjust font size")
 
                 Button(action: onStop) {
                     Label("Stop", systemImage: "stop.fill")
@@ -116,6 +135,20 @@ struct TranslatedWindowView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
         .accessibilityIdentifier("waitingView")
+    }
+
+    // MARK: - Font Size Controls
+
+    private func decreaseFontSize() {
+        let newValue = max(0.5, fontSizeMultiplier - 0.1)
+        fontSizeMultiplier = newValue
+        pipeline.fontSizeMultiplier = newValue
+    }
+
+    private func increaseFontSize() {
+        let newValue = min(2.0, fontSizeMultiplier + 0.1)
+        fontSizeMultiplier = newValue
+        pipeline.fontSizeMultiplier = newValue
     }
 
     // MARK: - Stats Overlay

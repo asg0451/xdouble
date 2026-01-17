@@ -44,9 +44,10 @@ final class OverlayRenderer: Sendable {
     /// - Parameters:
     ///   - regions: Array of TextRegion with translations to render
     ///   - image: The source image to overlay text onto
+    ///   - fontSizeMultiplier: Multiplier for font size (default: 1.0)
     /// - Returns: NSImage with translated text overlaid on the original
     /// - Throws: OverlayRendererError if rendering fails
-    func render(regions: [TextRegion], onto image: NSImage) throws -> NSImage {
+    func render(regions: [TextRegion], onto image: NSImage, fontSizeMultiplier: CGFloat = 1.0) throws -> NSImage {
         // Get the image size
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             throw OverlayRendererError.invalidImage
@@ -101,7 +102,7 @@ final class OverlayRenderer: Sendable {
             )
 
             // Calculate font size based on box height
-            let fontSize = calculateFontSize(for: absoluteBox, text: translation)
+            let fontSize = calculateFontSize(for: absoluteBox, text: translation, multiplier: fontSizeMultiplier)
 
             // Draw the translated text
             drawText(
@@ -221,7 +222,7 @@ final class OverlayRenderer: Sendable {
     }
 
     /// Calculates an appropriate font size for the translated text to fit within the bounding box.
-    private func calculateFontSize(for rect: CGRect, text: String) -> CGFloat {
+    private func calculateFontSize(for rect: CGRect, text: String, multiplier: CGFloat) -> CGFloat {
         // Start with a font size based on the box height
         let baseSize = rect.height * 0.8
 
@@ -231,13 +232,19 @@ final class OverlayRenderer: Sendable {
         // Use a simple heuristic: assume average character width is roughly 0.6x height for English
         let estimatedTextWidth = CGFloat(text.count) * baseSize * 0.6
 
+        var fontSize: CGFloat
         if estimatedTextWidth > targetWidth && text.count > 0 {
             // Scale down to fit width
             let scaleFactor = targetWidth / estimatedTextWidth
-            return max(baseSize * scaleFactor, 8.0)  // Minimum 8pt
+            fontSize = baseSize * scaleFactor
+        } else {
+            fontSize = baseSize
         }
 
-        return max(baseSize, 8.0)
+        // Apply multiplier after fit calculation
+        fontSize *= multiplier
+
+        return max(fontSize, 8.0)  // Minimum 8pt
     }
 
     /// Draws translated text centered within the bounding box.
