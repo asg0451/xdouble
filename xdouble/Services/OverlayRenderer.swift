@@ -29,8 +29,7 @@ enum OverlayRendererError: Error, LocalizedError {
 
 /// Service for rendering translated text overlays onto images.
 /// Uses CoreGraphics for compositing translated text on top of the original frame.
-/// Marked nonisolated to allow use from any actor context.
-nonisolated final class OverlayRenderer: Sendable {
+final class OverlayRenderer: Sendable {
 
     /// Padding ratio around text within the bounding box
     let paddingRatio: CGFloat

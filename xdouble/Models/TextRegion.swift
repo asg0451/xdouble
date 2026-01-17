@@ -9,8 +9,7 @@ import Foundation
 import CoreGraphics
 
 /// Represents a region of detected text with its location and optional translation.
-/// Marked nonisolated to allow use from any actor context.
-nonisolated struct TextRegion: Identifiable, Sendable {
+struct TextRegion: Identifiable, Sendable {
     /// Unique identifier for this region
     let id: UUID
 

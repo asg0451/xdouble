@@ -29,8 +29,7 @@ enum OCRError: Error, LocalizedError {
 
 /// Service for detecting text in images using Vision framework.
 /// Optimized for Simplified Chinese text recognition.
-/// Marked nonisolated to allow use from any actor context.
-nonisolated final class OCRService: Sendable {
+final class OCRService: Sendable {
     /// Minimum confidence threshold for including detected text
     let minimumConfidence: Float
 

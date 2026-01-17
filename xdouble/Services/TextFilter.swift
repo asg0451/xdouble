@@ -9,8 +9,7 @@ import Foundation
 
 /// Service for filtering text regions to skip translation of certain content.
 /// Filters out numbers, single characters, low-confidence OCR results, and English text.
-/// Marked nonisolated to allow use from any actor context.
-nonisolated struct TextFilter: Sendable {
+struct TextFilter: Sendable {
 
     /// Minimum OCR confidence threshold for translation (0.0-1.0)
     let minimumConfidence: Float
