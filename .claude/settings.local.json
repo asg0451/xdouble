@@ -58,7 +58,8 @@
       "Bash(swift -v:*)",
       "Bash(swift -parse:*)",
       "Bash(xcodebuild test:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(swift:*)"
     ]
   },
   "hooks": {

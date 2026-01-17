@@ -1,1 +1,1 @@
-**Add loading states and feedback** - Completion: UI shows loading indicator while initializing; shows "Processing..." or frame rate indicator during operation
+**Add test assets (Chinese text images)** - Completion: Test bundle contains at least 2 PNG images with clear Chinese text for testing

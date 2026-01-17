@@ -97,7 +97,7 @@
 
 ### Phase 6: Testing
 
-- [ ] **Add test assets (Chinese text images)** - Completion: Test bundle contains at least 2 PNG images with clear Chinese text for testing
+- [x] **Add test assets (Chinese text images)** - Completion: Test bundle contains at least 2 PNG images with clear Chinese text for testing
   - Priority: high
   - Dependencies: none
 
