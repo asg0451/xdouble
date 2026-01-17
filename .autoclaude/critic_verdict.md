@@ -2,50 +2,30 @@ APPROVED
 
 ## Summary
 
-Reviewed the latest commits implementing:
-1. Screen recording entitlements (`xdouble.entitlements`)
-2. Data models (`TextRegion.swift`, `TranslatedFrame.swift`)
-3. `CaptureService` for window capture using ScreenCaptureKit
-4. CIContext reuse fix in `CaptureStreamOutput`
+Reviewed the latest changes implementing CaptureService (ScreenCaptureKit wrapper) and OCRService (Vision framework Chinese text detection), along with data models TextRegion and TranslatedFrame.
 
-## Test Results
+### What was reviewed:
+- **TextRegion.swift**: Clean data model with proper coordinate conversion (Vision bottom-left to CoreGraphics top-left)
+- **TranslatedFrame.swift**: Well-designed output model with useful performance metrics
+- **CaptureService.swift**: Solid ScreenCaptureKit integration with async/await streaming, proper permission handling, and frame rate control
+- **OCRService.swift**: Vision framework OCR configured for Simplified Chinese with confidence filtering
+- **xdouble.entitlements**: Correct screen-recording entitlement configured
+- **CaptureServiceTests.swift**: Good coverage of types and error handling (7 tests)
+- **OCRServiceTests.swift**: Comprehensive tests including actual Chinese text detection with programmatically generated images (12 tests)
 
-All 12 tests pass:
-- 8 unit tests (CaptureServiceTests)
-- 4 UI tests (launch and example tests)
+### Test Results:
+All 19 unit tests pass, plus UI tests. Build succeeds without errors.
 
-```
-** TEST SUCCEEDED **
-Executed 4 tests, with 0 failures (UI)
-Executed 8 tests, with 0 failures (Unit)
-```
+### Code Quality:
+- Follows Swift best practices with proper async/await patterns
+- Uses modern Swift Testing framework (not XCTest)
+- Sendable conformance handled appropriately
+- Error types have helpful localized descriptions
+- Edge cases handled (empty images, low confidence, missing permissions)
 
-## Code Quality
+### Minor Issues (already tracked in TODO.md):
+Two low-priority issues are already documented and tracked:
+1. Content rect type cast may not be correct, but has safe fallback to image dimensions
+2. CaptureWindow/TranslatedFrame Sendable conformance with non-Sendable types
 
-**Correctness:**
-- ScreenCaptureKit integration is correct (`SCStream`, `SCContentFilter`, `SCStreamConfiguration`)
-- Proper async/await usage with `AsyncStream` for frame delivery
-- Coordinate conversion in `TextRegion.absoluteBoundingBox()` correctly flips Y-axis from Vision to CoreGraphics
-
-**Good practices observed:**
-- Frame rate clamped to safe range (0.1-30.0 fps)
-- Self-window exclusion from capture list
-- Minimum window size filtering (50x50)
-- Proper error types with `LocalizedError` conformance
-- Reusable `CIContext` for efficiency
-
-**Known issues (already tracked in TODO.md):**
-- Content rect type cast may need correction (low priority)
-- `CaptureWindow` Sendable conformance with `SCWindow` reference (low priority)
-
-## E2E Integration Test Note
-
-The E2E integration test is planned for Phase 6 per the project plan. It requires the complete pipeline (CaptureService + OCRService + TranslationService + OverlayRenderer). Current implementation is at Phase 2, so the E2E test is not yet applicable. The existing unit tests for CaptureService are appropriate for this phase.
-
-## Security
-
-No vulnerabilities introduced. Screen recording entitlement is properly declared.
-
-## Verdict
-
-Code is correct for its current development phase. All tests pass. Known minor issues are already tracked in TODO.md.
+These are non-blocking and appropriately prioritized as low.

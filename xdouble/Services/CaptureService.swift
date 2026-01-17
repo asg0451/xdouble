@@ -264,16 +264,16 @@ private final class CaptureStreamOutput: NSObject, SCStreamOutput, @unchecked Se
         guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
 
         // Get content rect from attachments if available
+        // ScreenCaptureKit stores contentRect as a dictionary representation of CGRect
         var contentRect = CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
         if let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
            let attachment = attachments.first,
-           let rectDict = attachment[.contentRect] as? [String: CGFloat] {
-            contentRect = CGRect(
-                x: rectDict["X"] ?? 0,
-                y: rectDict["Y"] ?? 0,
-                width: rectDict["Width"] ?? CGFloat(cgImage.width),
-                height: rectDict["Height"] ?? CGFloat(cgImage.height)
-            )
+           let rectValue = attachment[.contentRect] {
+            // NSDictionary is toll-free bridged with CFDictionary
+            if let rectDict = rectValue as? NSDictionary,
+               let rect = CGRect(dictionaryRepresentation: rectDict) {
+                contentRect = rect
+            }
         }
 
         let frame = CapturedFrame(
