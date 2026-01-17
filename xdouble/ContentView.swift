@@ -7,6 +7,25 @@
 
 import SwiftUI
 import Translation
+import os.log
+
+private let logger = Logger(subsystem: "xdouble", category: "ContentView")
+
+/// A wrapper view that handles the translation task lifecycle.
+/// By using a unique ID, we force SwiftUI to completely recreate this view
+/// and its .translationTask modifier each time we need a new session.
+private struct TranslationTaskView: View {
+    let config: TranslationSession.Configuration
+    let onSession: (TranslationSession) async -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .translationTask(config) { session in
+                await onSession(session)
+            }
+    }
+}
 
 /// Represents the current screen recording permission status.
 enum PermissionStatus {
@@ -35,6 +54,9 @@ struct ContentView: View {
 
     /// Translation session configuration for triggering the translation task
     @State private var translationConfig: TranslationSession.Configuration?
+
+    /// Unique ID to force .translationTask to re-trigger even with equivalent configs
+    @State private var translationTaskID = UUID()
 
     /// Whether we're in the process of starting translation
     @State private var isStarting = false
@@ -74,8 +96,14 @@ struct ContentView: View {
                 }
             }
         }
-        .translationTask(translationConfig) { session in
-            await startTranslation(with: session)
+        .background {
+            // Use a separate view for .translationTask so it gets fully recreated
+            if let config = translationConfig {
+                TranslationTaskView(config: config) { session in
+                    await startTranslation(with: session)
+                }
+                .id(translationTaskID) // Force recreation when ID changes
+            }
         }
         .alert("Error", isPresented: $showErrorAlert) {
             Button("OK") {
@@ -284,6 +312,9 @@ struct ContentView: View {
             },
             onPlay: {
                 retrySetup()
+            },
+            onBack: {
+                returnToWindowPicker()
             }
         )
     }
@@ -351,11 +382,8 @@ struct ContentView: View {
                     translationSetupState = .failed(reason)
                     isStarting = false
                     return
-                case .installed:
-                    // Model is ready, transition to ready state immediately
-                    translationSetupState = .ready
-                case .downloading, .unknown:
-                    // Continue with setup, let .translationTask handle it
+                case .installed, .downloading, .unknown:
+                    // Continue with setup, don't set .ready yet - wait until config is set
                     break
                 }
 
@@ -363,7 +391,9 @@ struct ContentView: View {
                 let config = try pipeline.translationService.getConfiguration()
 
                 // Trigger the translation task by setting the configuration
-                // This may show a system download prompt if needed
+                translationSetupState = .ready
+                // Generate new ID to force TranslationTaskView to be recreated
+                translationTaskID = UUID()
                 translationConfig = config
             } catch {
                 await MainActor.run {
@@ -450,10 +480,14 @@ struct ContentView: View {
     private func returnToWindowPicker() {
         Task {
             await pipeline.stop()
-            selectedWindow = nil
+            pipeline.clearStoredSession()
+            pipeline.translationService.invalidateConfiguration()
+            // Clear config first to properly invalidate the translation task
             translationConfig = nil
             translationSetupState = .notStarted
             isStarting = false
+            // Set selectedWindow last to trigger view transition after state is clean
+            selectedWindow = nil
         }
     }
 }

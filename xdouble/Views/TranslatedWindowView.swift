@@ -18,6 +18,9 @@ struct TranslatedWindowView: View {
     /// Callback when play button is pressed (to restart translation)
     let onPlay: () -> Void
 
+    /// Callback when back button is pressed (to return to window picker)
+    let onBack: () -> Void
+
     /// Whether to show the stats overlay
     @State private var showStats = true
 
@@ -34,6 +37,14 @@ struct TranslatedWindowView: View {
         }
         .frame(minWidth: 400, minHeight: 300)
         .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                Button(action: onBack) {
+                    Label("Back", systemImage: "chevron.left")
+                }
+                .help("Return to window picker")
+                .accessibilityIdentifier("backButton")
+            }
+
             ToolbarItemGroup {
                 Toggle(isOn: $showStats) {
                     Label("Stats", systemImage: "chart.bar")
@@ -235,7 +246,8 @@ struct TranslatedWindowView: View {
     return TranslatedWindowView(
         pipeline: pipeline,
         onStop: { print("Stop pressed") },
-        onPlay: { print("Play pressed") }
+        onPlay: { print("Play pressed") },
+        onBack: { print("Back pressed") }
     )
 }
 
@@ -244,6 +256,7 @@ struct TranslatedWindowView: View {
     return TranslatedWindowView(
         pipeline: pipeline,
         onStop: { print("Stop pressed") },
-        onPlay: { print("Play pressed") }
+        onPlay: { print("Play pressed") },
+        onBack: { print("Back pressed") }
     )
 }

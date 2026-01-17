@@ -11,7 +11,7 @@ import Combine
 import Translation
 
 /// State of the translation pipeline.
-enum PipelineState: Sendable {
+enum PipelineState: Sendable, Equatable {
     case idle
     case starting
     case running
@@ -234,6 +234,14 @@ final class TranslationPipeline: ObservableObject {
 
         isProcessing = false
         state = .idle
+    }
+
+    /// Clears the stored session and window, preventing restart with stale session.
+    /// Call this when the translation configuration is invalidated (e.g., returning to window picker).
+    func clearStoredSession() {
+        storedSession = nil
+        storedWindow = nil
+        currentFrame = nil
     }
 
     /// Processes a single frame through the pipeline.

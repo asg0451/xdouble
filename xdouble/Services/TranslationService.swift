@@ -157,6 +157,12 @@ final class TranslationService: ObservableObject {
         return status == .supported
     }
 
+    /// Invalidates the current configuration, forcing a fresh one to be created on next prepare().
+    func invalidateConfiguration() {
+        configuration = nil
+        isAvailable = false
+    }
+
     /// Translates a single text string from Chinese to English.
     /// - Parameter text: The Chinese text to translate
     /// - Parameter session: The translation session to use

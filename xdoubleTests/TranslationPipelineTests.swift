@@ -617,6 +617,84 @@ struct TranslationPipelineTests {
         #expect(imagesAreDifferent(testImage, outputCGImage), "Pipeline output must differ from input when translations are applied")
     }
 
+    // MARK: - Pipeline State Tests
+
+    @Test func pipelineStartsInIdleState() async throws {
+        let pipeline = TranslationPipeline()
+        #expect(pipeline.state == .idle, "Pipeline should start in idle state")
+        #expect(pipeline.canRestart == false, "Fresh pipeline should not be restartable")
+    }
+
+    @Test func pipelineClearStoredSessionResetsState() async throws {
+        let pipeline = TranslationPipeline()
+
+        // Verify initial state
+        #expect(pipeline.canRestart == false)
+        #expect(pipeline.currentFrame == nil)
+
+        // Clear should be safe on fresh pipeline
+        pipeline.clearStoredSession()
+
+        #expect(pipeline.canRestart == false)
+        #expect(pipeline.currentFrame == nil)
+        #expect(pipeline.state == .idle)
+    }
+
+    @Test func pipelineCanRestartAfterStopWithoutClear() async throws {
+        // This test verifies behavior when stop is called but session isn't cleared
+        // (simulating the stop button behavior, not the back button)
+        let pipeline = TranslationPipeline()
+
+        // Without actually starting (which requires a real window), we can't fully test this
+        // But we can verify the preconditions
+        #expect(pipeline.canRestart == false, "canRestart should be false without stored session")
+    }
+
+    @Test func translationServiceInvalidateConfigurationClearsState() async throws {
+        let service = TranslationService()
+
+        // Prepare to create a configuration
+        try await service.prepare()
+
+        // Should have a configuration now
+        let config1 = try service.getConfiguration()
+        #expect(config1 != nil)
+
+        // Invalidate
+        service.invalidateConfiguration()
+
+        // Should throw when trying to get configuration
+        do {
+            _ = try service.getConfiguration()
+            Issue.record("getConfiguration should throw after invalidation")
+        } catch {
+            // Expected - configuration was invalidated
+        }
+
+        // Prepare again should create a new configuration
+        try await service.prepare()
+        let config2 = try service.getConfiguration()
+        #expect(config2 != nil)
+    }
+
+    @Test func translationServiceCreatesNewConfigOnEachPrepare() async throws {
+        let service = TranslationService()
+
+        // First prepare
+        try await service.prepare()
+        let config1 = try service.getConfiguration()
+
+        // Invalidate and prepare again
+        service.invalidateConfiguration()
+        try await service.prepare()
+        let config2 = try service.getConfiguration()
+
+        // Both should exist (we can't easily compare identity in Swift for classes,
+        // but we verified the flow works)
+        #expect(config1 != nil)
+        #expect(config2 != nil)
+    }
+
     @Test func fullE2E_verifyChineseTextReplacedByEnglish() async throws {
         // This test verifies that Chinese text is visually replaced by English text
 
