@@ -15,4 +15,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        run: xcodebuild -scheme xdouble build
+        run: xcodebuild -scheme xdouble build CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO
