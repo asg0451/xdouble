@@ -388,18 +388,6 @@ struct TranslationPipelineTests {
         }
     }
 
-    /// Checks if a text string contains primarily English characters.
-    private func containsEnglishText(_ text: String) -> Bool {
-        let englishLetters = text.filter { char in
-            char.unicodeScalars.contains { scalar in
-                // Basic Latin letters (A-Z, a-z)
-                (0x0041...0x005A).contains(scalar.value) ||
-                (0x0061...0x007A).contains(scalar.value)
-            }
-        }
-        return englishLetters.count > 0
-    }
-
     @Test func fullE2E_realImageWithOCRVerification() async throws {
         // STEP 1: Load real Chinese screenshot from test bundle
         let testImage = try TestImageLoader.loadCGImage(.chineseScreenshot)
