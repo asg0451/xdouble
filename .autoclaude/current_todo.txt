@@ -1,1 +1,1 @@
-**Create data models** - Completion: TextRegion.swift and TranslatedFrame.swift exist with documented structs that compile without errors
+**Implement CaptureService** - Completion: CaptureService can enumerate available windows and capture frames from a selected window at configurable FPS; unit test passes with mock content

@@ -54,7 +54,9 @@
       "Bash(head:*)",
       "Bash(xargs ls:*)",
       "Bash(git commit:*)",
-      "Bash(xcodebuild:*)"
+      "Bash(xcodebuild:*)",
+      "Bash(swift -v:*)",
+      "Bash(swift -parse:*)"
     ]
   },
   "hooks": {

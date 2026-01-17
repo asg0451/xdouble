@@ -16,7 +16,7 @@
 
 ### Phase 2: Core Services
 
-- [ ] **Implement CaptureService** - Completion: CaptureService can enumerate available windows and capture frames from a selected window at configurable FPS; unit test passes with mock content
+- [x] **Implement CaptureService** - Completion: CaptureService can enumerate available windows and capture frames from a selected window at configurable FPS; unit test passes with mock content
   - Priority: high
   - Dependencies: Configure entitlements
 
