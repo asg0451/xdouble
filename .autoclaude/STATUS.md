@@ -7,12 +7,4 @@
 **Test Command:** whatever is standard for swiftui and configured in this project. make sure to include a verifiable e2e integration test
 
 ## Latest Update
-Completed: **Implement WindowPickerView** - Created Views/WindowPickerView.swift with:
-- Grid layout displaying available windows with thumbnails
-- Async thumbnail loading from CaptureService.captureFrame()
-- Window title and application name display
-- Hover effects for selection
-- Refresh button to reload window list
-- Error handling with permission dialog link
-- Empty state handling
-- Build verified: `xcodebuild -scheme xdouble build` succeeded
+Completed: **Implement TranslatedWindowView** - Created TranslatedWindowView.swift that displays TranslatedFrame images with performance stats overlay. Shows current frame from pipeline, displays processing time, effective FPS, frame count, and state indicators. Handles all pipeline states (idle, starting, running, stopping, error). Build and all tests pass.

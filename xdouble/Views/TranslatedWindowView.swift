@@ -1,0 +1,178 @@
+//
+//  TranslatedWindowView.swift
+//  xdouble
+//
+//  Displays translated frames from the TranslationPipeline with performance stats overlay.
+//
+
+import SwiftUI
+
+/// A view that displays the translated frames from the TranslationPipeline.
+struct TranslatedWindowView: View {
+    /// The translation pipeline providing frames
+    @ObservedObject var pipeline: TranslationPipeline
+
+    /// Callback when stop button is pressed
+    let onStop: () -> Void
+
+    /// Whether to show the stats overlay
+    @State private var showStats = true
+
+    var body: some View {
+        ZStack {
+            frameView
+
+            if showStats {
+                statsOverlay
+            }
+        }
+        .frame(minWidth: 400, minHeight: 300)
+        .toolbar {
+            ToolbarItemGroup {
+                Toggle(isOn: $showStats) {
+                    Label("Stats", systemImage: "chart.bar")
+                }
+                .help("Toggle performance stats")
+
+                Button(action: onStop) {
+                    Label("Stop", systemImage: "stop.fill")
+                }
+                .help("Stop translation")
+            }
+        }
+    }
+
+    // MARK: - Frame Display
+
+    @ViewBuilder
+    private var frameView: some View {
+        if let frame = pipeline.currentFrame {
+            Image(nsImage: frame.image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .background(Color(nsColor: .windowBackgroundColor))
+        } else {
+            waitingView
+        }
+    }
+
+    private var waitingView: some View {
+        VStack(spacing: 16) {
+            switch pipeline.state {
+            case .idle:
+                Image(systemName: "play.circle")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.secondary)
+                Text("Ready")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+            case .starting:
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text("Starting pipeline...")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+            case .running:
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text("Waiting for first frame...")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+            case .stopping:
+                ProgressView()
+                    .scaleEffect(1.5)
+                Text("Stopping...")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+
+            case .error(let message):
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.orange)
+                Text("Error")
+                    .font(.headline)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    // MARK: - Stats Overlay
+
+    private var statsOverlay: some View {
+        VStack {
+            HStack {
+                Spacer()
+                statsPanel
+                    .padding(8)
+            }
+            Spacer()
+        }
+    }
+
+    private var statsPanel: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            if let frame = pipeline.currentFrame {
+                Text(frame.performanceDescription)
+                    .font(.caption.monospacedDigit())
+
+                Text(String(format: "%.1f eff. FPS", frame.effectiveFPS))
+                    .font(.caption.monospacedDigit())
+            }
+
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(stateColor)
+                    .frame(width: 8, height: 8)
+
+                Text("Frame \(pipeline.frameCount)")
+                    .font(.caption.monospacedDigit())
+            }
+
+            if pipeline.averageProcessingTime > 0 {
+                Text(String(format: "Avg: %.0fms", pipeline.averageProcessingTime * 1000))
+                    .font(.caption.monospacedDigit())
+            }
+        }
+        .padding(8)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private var stateColor: Color {
+        switch pipeline.state {
+        case .idle:
+            return .gray
+        case .starting, .stopping:
+            return .yellow
+        case .running:
+            return .green
+        case .error:
+            return .red
+        }
+    }
+}
+
+#Preview("With Frame") {
+    let pipeline = TranslationPipeline()
+    return TranslatedWindowView(
+        pipeline: pipeline,
+        onStop: { print("Stop pressed") }
+    )
+}
+
+#Preview("Loading") {
+    let pipeline = TranslationPipeline()
+    return TranslatedWindowView(
+        pipeline: pipeline,
+        onStop: { print("Stop pressed") }
+    )
+}

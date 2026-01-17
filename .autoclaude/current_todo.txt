@@ -1,1 +1,1 @@
-**Implement WindowPickerView** - Completion: SwiftUI view displays list of available windows with thumbnails; selecting a window triggers callback with SCWindow
+**Implement TranslatedWindowView** - Completion: SwiftUI view displays TranslatedFrame images; updates at frame rate from pipeline

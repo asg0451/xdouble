@@ -57,7 +57,7 @@
   - Priority: high
   - Dependencies: CaptureService (for window enumeration)
 
-- [ ] **Implement TranslatedWindowView** - Completion: SwiftUI view displays TranslatedFrame images; updates at frame rate from pipeline
+- [x] **Implement TranslatedWindowView** - Completion: SwiftUI view displays TranslatedFrame images; updates at frame rate from pipeline
   - Priority: high
   - Dependencies: TranslationPipeline
 
