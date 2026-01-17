@@ -4,6 +4,9 @@
 
 ## Pending
 
+- [ ] **Fix: Add partial E2E integration test** - Completion: TranslationPipelineTests.swift exists with a test that loads a test image, runs OCR→filter→render (without actual translation due to TranslationSession API limitation), and verifies output image differs from input and rendering completed without error
+  - Priority: low
+
 - [x] **Fix: Swift 6 concurrency warnings** - Completion: Resolve MainActor isolation warnings in OCRService and TextRegion so the code compiles without warnings in Swift 6 language mode
   - Priority: low
 
@@ -68,7 +71,7 @@
   - Priority: high
   - Dependencies: WindowPickerView, TranslatedWindowView
 
-- [ ] **Update xdoubleApp for proper windowing** - Completion: App launches correctly, handles window lifecycle, shows permission dialogs when needed
+- [x] **Update xdoubleApp for proper windowing** - Completion: App launches correctly, handles window lifecycle, shows permission dialogs when needed
   - Priority: high
   - Dependencies: ContentView
 
